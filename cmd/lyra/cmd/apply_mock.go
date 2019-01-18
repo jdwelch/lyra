@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	lang    string
-	extData string
+	lang      string
+	extData   string
+	hieraData string
 )
 
 // NewApplyMockCmd returns the apply (mock) subcommand
@@ -92,7 +93,7 @@ func mockApplyFirstTime() {
 `)
 
 	if !noop {
-		c := ui.AskForConfirmation("Sure you want to do this?", assumeYes)
+		c := ui.AskForConfirmation("Sure you want to do this?")
 		if c {
 			m.SetDirty()
 			ui.ProgressBar("Creating ec2_instance myapp-vm-1", 1500, true)
@@ -157,7 +158,7 @@ func mockApplyChange() {
       tags:
         environment: dev_env`)
 	if !noop {
-		c := ui.AskForConfirmation("Sure you want to do this?", assumeYes)
+		c := ui.AskForConfirmation("Sure you want to do this?")
 		if c {
 			ui.ProgressBar("Changing attributes of ec2_instance myapp-vm-1", 1500, false)
 			if !verbose {

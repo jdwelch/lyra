@@ -7,9 +7,9 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/lyraproj/lyra/pkg/i18n"
 	"github.com/lyraproj/lyra/pkg/logger"
 	"github.com/lyraproj/lyra/pkg/version"
-	"github.com/mgutz/ansi"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -62,19 +62,20 @@ func NewRootCmd() *cobra.Command {
 	viper.BindPFlag("loglevel", cmd.PersistentFlags().Lookup("loglevel"))
 	viper.BindPFlag("assume-yes", cmd.PersistentFlags().Lookup("assume-yes"))
 
- 	cmd.AddCommand(NewVersionCmd())
-	cmd.AddCommand(NewApplyCmd())
+	// real
+	cmd.AddCommand(NewVersionCmd())
+	// cmd.AddCommand(NewApplyCmd())
 	cmd.AddCommand(NewControllerCmd())
 	cmd.AddCommand(NewValidateCmd())
 	cmd.AddCommand(EmbeddedPluginCmd())
-	cmd.AddCommand(NewApplyMockCmd()) //TODO: Remember this does nothing real
+
+	// mock
+	cmd.AddCommand(NewApplyMockCmd())
 	cmd.AddCommand(NewApplyEnvCmd())
 	cmd.AddCommand(NewDestroyCmd())
 	cmd.AddCommand(NewExperimentalCmd())
 	cmd.AddCommand(NewInitCmd())
 	cmd.AddCommand(NewShowCmd())
-	cmd.AddCommand(NewValidateCmd())
-	cmd.AddCommand(NewVersionCmd())
 
 	return cmd
 }
