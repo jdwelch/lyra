@@ -3,6 +3,9 @@ package resource
 import (
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
+	"github.com/hashicorp/go-hclog"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -10,41 +13,41 @@ import (
 // RouteTable is the managed resource
 type RouteTable struct {
 	VpcId           string
-	RouteTableId    string
-	SubnetId        string
-	Routes          []Route
-	Associations    []RouteTableAssociation
-	PropagatingVgws []PropagatingVgw
+	RouteTableId    *string
+	SubnetId        *string
+	Routes          []Route                 `puppet:"type=>Array[Aws::Route],value=>[]"`
+	Associations    []RouteTableAssociation `puppet:"type=>Array[Aws::RouteTableAssociation],value=>[]"`
+	PropagatingVgws []PropagatingVgw        `puppet:"type=>Array[Aws::PropagatingVgw],value=>[]"`
 	Tags            map[string]string
 }
 
 // RouteTableAssociation -
 type RouteTableAssociation struct {
 	Main                    bool
-	RouteTableAssociationID string
-	RouteTableID            string
-	SubnetID                string
+	RouteTableAssociationId *string
+	RouteTableId            string
+	SubnetId                string
 }
 
 // PropagatingVgw -
 type PropagatingVgw struct {
-	GatewayID string
+	GatewayId string
 }
 
-// Route -
+// Route - FIXME this is not idempotent, not actually passed
 type Route struct {
-	DestinationCidrBlock        string
-	DestinationIpv6CidrBlock    string
-	DestinationPrefixListID     string
-	EgressOnlyInternetGatewayID string
-	GatewayID                   string
-	InstanceID                  string
-	InstanceOwnerID             string
-	NatGatewayID                string
-	NetworkInterfaceID          string
-	Origin                      string
-	State                       string
-	VpcPeeringConnectionID      string
+	DestinationCidrBlock        string `puppet:"type=>String, value=>''"`
+	DestinationIpv6CidrBlock    string `puppet:"type=>String, value=>''"`
+	DestinationPrefixListId     string `puppet:"type=>String, value=>''"`
+	EgressOnlyInternetGatewayId string `puppet:"type=>String, value=>''"`
+	GatewayId                   string `puppet:"type=>String, value=>''"`
+	InstanceId                  string `puppet:"type=>String, value=>''"`
+	InstanceOwnerId             string `puppet:"type=>String, value=>''"`
+	NatGatewayId                string `puppet:"type=>String, value=>''"`
+	NetworkInterfaceId          string `puppet:"type=>String, value=>''"`
+	Origin                      string `puppet:"type=>String, value=>''"`
+	State                       string `puppet:"type=>String, value=>''"`
+	VpcPeeringConnectionId      string `puppet:"type=>String, value=>''"`
 	Tags                        map[string]string
 }
 
@@ -53,7 +56,10 @@ type RouteTableHandler struct{}
 
 // Create a RouteTable
 func (h *RouteTableHandler) Create(desired *RouteTable) (*RouteTable, string, error) {
-	log.Debug("Creating RouteTable", "desired", desired)
+	log := hclog.Default()
+	if log.IsDebug() {
+		log.Debug("Creating RouteTable", "desired", spew.Sdump(desired))
+	}
 	client := newClient()
 	response, err := client.CreateRouteTable(
 		&ec2.CreateRouteTableInput{
@@ -75,12 +81,15 @@ func (h *RouteTableHandler) Create(desired *RouteTable) (*RouteTable, string, er
 	}
 
 	actual := h.fromAWS(desired, response.RouteTable)
-	log.Debug("Created RouteTable", "actual", actual, "externalID", externalID)
+	if log.IsDebug() {
+		log.Debug("Created RouteTable", "actual", spew.Sdump(actual), "externalID", externalID)
+	}
 	return actual, externalID, err
 }
 
 // Read a RouteTable
 func (h *RouteTableHandler) Read(externalID string) (*RouteTable, error) {
+	log := hclog.Default()
 	log.Debug("Reading RouteTable", "externalID", externalID)
 	client := newClient()
 	response, err := client.DescribeRouteTables(
@@ -97,12 +106,15 @@ func (h *RouteTableHandler) Read(externalID string) (*RouteTable, error) {
 		log.Error("Expected to find one RouteTable but found more.  Returning the first one anyway", "externalID", externalID, "count", len(response.RouteTables))
 	}
 	actual := h.fromAWS(&RouteTable{}, response.RouteTables[0])
-	log.Debug("Completed RouteTable read", "actual", actual)
+	if log.IsDebug() {
+		log.Debug("Completed RouteTable read", "actual", spew.Sdump(actual))
+	}
 	return actual, nil
 }
 
 // Delete a RouteTable
 func (h *RouteTableHandler) Delete(externalID string) error {
+	log := hclog.Default()
 	log.Debug("Deleting RouteTable", "externalID", externalID)
 	client := newClient()
 
@@ -122,7 +134,7 @@ func (h *RouteTableHandler) Delete(externalID string) error {
 func (h *RouteTableHandler) fromAWS(desired *RouteTable, actual *ec2.RouteTable) *RouteTable {
 	routeTable := RouteTable{
 		VpcId:           *actual.VpcId,
-		RouteTableId:    *actual.RouteTableId,
+		RouteTableId:    actual.RouteTableId,
 		Tags:            convertTags(actual.Tags),
 		Associations:    convertAssociations(actual.Associations),
 		PropagatingVgws: convertPropagatingVgws(actual.PropagatingVgws),
@@ -137,12 +149,12 @@ func convertAssociations(ec2Associations []*ec2.RouteTableAssociation) []RouteTa
 	for _, rta := range ec2Associations {
 		association := RouteTableAssociation{
 			Main:                    *rta.Main,
-			RouteTableAssociationID: *rta.RouteTableAssociationId,
-			RouteTableID:            *rta.RouteTableId,
+			RouteTableAssociationId: rta.RouteTableAssociationId,
+			RouteTableId:            *rta.RouteTableId,
 		}
 
 		if rta.SubnetId != nil {
-			association.SubnetID = *rta.SubnetId
+			association.SubnetId = *rta.SubnetId
 		}
 
 		result = append(result, association)
@@ -154,7 +166,7 @@ func convertPropagatingVgws(ec2PropagatingVgws []*ec2.PropagatingVgw) []Propagat
 	result := []PropagatingVgw{}
 	for _, pvgw := range ec2PropagatingVgws {
 		propagatingVgw := PropagatingVgw{
-			GatewayID: *pvgw.GatewayId,
+			GatewayId: *pvgw.GatewayId,
 		}
 		result = append(result, propagatingVgw)
 	}
@@ -168,17 +180,17 @@ func convertRoutes(ec2Routes []*ec2.Route) []Route {
 		// talk to thomas about this again as its a bit inconventient/overly complicated
 		route := Route{
 			DestinationCidrBlock: *rt.DestinationCidrBlock,
-			GatewayID:            *rt.GatewayId,
+			GatewayId:            *rt.GatewayId,
 			Origin:               *rt.Origin,
 			State:                *rt.State,
 		}
-		route.VpcPeeringConnectionID = emptyIfNil(rt.VpcPeeringConnectionId)
-		route.NetworkInterfaceID = emptyIfNil(rt.NetworkInterfaceId)
-		route.NatGatewayID = emptyIfNil(rt.NatGatewayId)
-		route.InstanceOwnerID = emptyIfNil(rt.InstanceOwnerId)
-		route.InstanceID = emptyIfNil(rt.InstanceId)
-		route.EgressOnlyInternetGatewayID = emptyIfNil(rt.EgressOnlyInternetGatewayId)
-		route.DestinationPrefixListID = emptyIfNil(rt.DestinationPrefixListId)
+		route.VpcPeeringConnectionId = emptyIfNil(rt.VpcPeeringConnectionId)
+		route.NetworkInterfaceId = emptyIfNil(rt.NetworkInterfaceId)
+		route.NatGatewayId = emptyIfNil(rt.NatGatewayId)
+		route.InstanceOwnerId = emptyIfNil(rt.InstanceOwnerId)
+		route.InstanceId = emptyIfNil(rt.InstanceId)
+		route.EgressOnlyInternetGatewayId = emptyIfNil(rt.EgressOnlyInternetGatewayId)
+		route.DestinationPrefixListId = emptyIfNil(rt.DestinationPrefixListId)
 		route.DestinationIpv6CidrBlock = emptyIfNil(rt.DestinationIpv6CidrBlock)
 
 		result = append(result, route)
@@ -187,6 +199,7 @@ func convertRoutes(ec2Routes []*ec2.Route) []Route {
 }
 
 func waitForRouteTable(client *ec2.EC2, externalID string) error {
+	log := hclog.Default()
 	log.Debug("Polling for route table")
 	return poll(func() (bool, error) {
 		response, err := client.DescribeRouteTables(

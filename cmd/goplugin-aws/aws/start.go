@@ -4,7 +4,6 @@ import (
 	"github.com/lyraproj/lyra/cmd/goplugin-aws/resource"
 	"github.com/lyraproj/puppet-evaluator/eval"
 	"github.com/lyraproj/servicesdk/grpc"
-	"github.com/lyraproj/servicesdk/service"
 )
 
 const (
@@ -18,14 +17,7 @@ func Start() {
 
 	eval.Puppet.Do(func(c eval.Context) {
 
-		sb := service.NewServerBuilder(c, `Aws`)
-
-		evs := sb.RegisterTypes("Aws", resource.Vpc{})
-		sb.RegisterHandler("Aws::VPCHandler", &resource.VPCHandler{}, evs[0])
-		evs = sb.RegisterTypes("Aws", resource.Subnet{})
-		sb.RegisterHandler("Aws::SubnetHandler", &resource.SubnetHandler{}, evs[0])
-
-		s := sb.Server()
+		s := resource.Server(c)
 		grpc.Serve(c, s)
 	})
 }

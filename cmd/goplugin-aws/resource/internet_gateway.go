@@ -2,19 +2,20 @@ package resource
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/hashicorp/go-hclog"
+	"time"
 )
 
 const defaultRetryBackoff = 1 * time.Second
 
 // InternetGateway is the managed resource
 type InternetGateway struct {
-	InternetGatewayId string
+	InternetGatewayId *string
 	Tags              map[string]string
-	Attachments       []InternetGatewayAttachment
+	Attachments       []InternetGatewayAttachment `puppet:"type=>Array[Aws::InternetGatewayAttachment],value=>[]"`
 }
 
 // InternetGatewayAttachment -
@@ -22,7 +23,7 @@ type InternetGateway struct {
 // Internet gateway.
 type InternetGatewayAttachment struct {
 	State string
-	VpcID string
+	VpcId string
 }
 
 //InternetGatewayHandler creates, reads and deletes the InternetGateway Resource
@@ -30,7 +31,10 @@ type InternetGatewayHandler struct{}
 
 // Create a InternetGateway
 func (h *InternetGatewayHandler) Create(desired *InternetGateway) (*InternetGateway, string, error) {
-	log.Debug("Creating InternetGateway", "desired", desired)
+	log := hclog.Default()
+	if log.IsDebug() {
+		log.Debug("Creating InternetGateway", "desired", spew.Sdump(desired))
+	}
 	client := newClient()
 	response, err := client.CreateInternetGateway(
 		&ec2.CreateInternetGatewayInput{})
@@ -54,12 +58,15 @@ func (h *InternetGatewayHandler) Create(desired *InternetGateway) (*InternetGate
 	}
 
 	actual := h.fromAWS(desired, response.InternetGateway)
-	log.Debug("Created InternetGateway", "actual", actual, "externalID", externalID)
+	if log.IsDebug() {
+		log.Debug("Created InternetGateway", "actual", spew.Sdump(actual), "externalID", externalID)
+	}
 	return actual, externalID, err
 }
 
 // Read a InternetGateway
 func (h *InternetGatewayHandler) Read(externalID string) (*InternetGateway, error) {
+	log := hclog.Default()
 	log.Debug("Reading InternetGateway", "externalID", externalID)
 	client := newClient()
 	response, err := client.DescribeInternetGateways(
@@ -76,12 +83,15 @@ func (h *InternetGatewayHandler) Read(externalID string) (*InternetGateway, erro
 		log.Error("Expected to find one InternetGateway but found more.  Returning the first one anyway", "externalID", externalID, "count", len(response.InternetGateways))
 	}
 	actual := h.fromAWS(&InternetGateway{}, response.InternetGateways[0])
-	log.Debug("Completed InternetGateway read", "actual", actual)
+	if log.IsDebug() {
+		log.Debug("Completed InternetGateway read", "actual", spew.Sdump(actual))
+	}
 	return actual, nil
 }
 
 // Delete a InternetGateway
 func (h *InternetGatewayHandler) Delete(externalID string) error {
+	log := hclog.Default()
 	log.Debug("Deleting InternetGateway", "externalID", externalID)
 	client := newClient()
 	_, err := client.DeleteInternetGateway(
@@ -98,26 +108,25 @@ func (h *InternetGatewayHandler) Delete(externalID string) error {
 
 func (h *InternetGatewayHandler) fromAWS(wanted *InternetGateway, actual *ec2.InternetGateway) *InternetGateway {
 	ig := InternetGateway{
-		InternetGatewayId: *actual.InternetGatewayId,
+		InternetGatewayId: actual.InternetGatewayId,
 		Tags:              convertTags(actual.Tags),
 	}
 
-	if len(actual.Attachments) > 0 {
-		attachments := []InternetGatewayAttachment{}
-		for _, attachment := range actual.Attachments {
-			a := InternetGatewayAttachment{
-				State: *attachment.State,
-				VpcID: *attachment.VpcId,
-			}
-			attachments = append(attachments, a)
+	attachments := []InternetGatewayAttachment{}
+	for _, attachment := range actual.Attachments {
+		a := InternetGatewayAttachment{
+			State: *attachment.State,
+			VpcId: *attachment.VpcId,
 		}
-		ig.Attachments = attachments
+		attachments = append(attachments, a)
 	}
+	ig.Attachments = attachments
 
 	return &ig
 }
 
 func waitForInternetGateway(client *ec2.EC2, externalID string) error {
+	log := hclog.Default()
 	log.Debug("Polling for internet gateway")
 	return poll(func() (bool, error) {
 		response, err := client.DescribeInternetGateways(

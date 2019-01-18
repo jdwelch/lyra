@@ -2,11 +2,11 @@ package resource
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/hashicorp/go-hclog"
 )
 
 const (
@@ -26,6 +26,7 @@ type InstanceHandler struct{}
 
 // Create Instance
 func (h *InstanceHandler) Create(desired *Instance) (*Instance, string, error) {
+	log := hclog.Default()
 	log.Debug("Creating Instance", "desired", desired)
 	client := newClient()
 	response, err := client.RunInstances(runInstancesInput(*desired))
@@ -48,13 +49,14 @@ func (h *InstanceHandler) Create(desired *Instance) (*Instance, string, error) {
 	}
 	log.Debug("instance status OK", "externalID", externalID)
 	tagResource(*client, desired.Tags, &externalID)
-	actual, err := h.getInstance(client, *desired)
+	actual, err := h.getInstance(client, externalID)
 	log.Debug("Created Instance", "actual", actual, "externalID", externalID)
 	return actual, externalID, err
 }
 
 // Read Instance
 func (h *InstanceHandler) Read(externalID string) (*Instance, error) {
+	log := hclog.Default()
 	log.Debug("Reading Instance", "externalID", externalID)
 	client := newClient()
 	response, err := client.DescribeInstances(
@@ -69,9 +71,9 @@ func (h *InstanceHandler) Read(externalID string) (*Instance, error) {
 	for _, r := range response.Reservations {
 		for _, i := range r.Instances {
 			ri := reservationInstance{
-				reservationID: r.ReservationId,
-				requesterID:   r.RequesterId,
-				ownerID:       r.OwnerId,
+				reservationId: r.ReservationId,
+				requesterId:   r.RequesterId,
+				ownerId:       r.OwnerId,
 				instance:      i,
 			}
 			instances = append(instances, ri)
@@ -90,6 +92,7 @@ func (h *InstanceHandler) Read(externalID string) (*Instance, error) {
 
 // Delete Instance
 func (h *InstanceHandler) Delete(externalID string) error {
+	log := hclog.Default()
 	log.Debug("Deleting Instance", "externalID", externalID)
 	client := newClient()
 
@@ -113,7 +116,7 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 	instance := Instance{
 		AdditionalInfo: desired.AdditionalInfo,
 		// CreditSpecification:
-		DisableAPITermination: desired.DisableAPITermination,
+		DisableApiTermination: desired.DisableApiTermination,
 		// ElasticGpuSpecification:
 		// InstanceInitiatedShutdownBehavior:
 		// InstanceMarketOptions:
@@ -122,82 +125,82 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 	}
 	instance.AdditionalInfo = desired.AdditionalInfo
 	instance.InstanceType = emptyIfNil(actual.instance.InstanceType)
-	instance.KernelID = emptyIfNil(actual.instance.KernelId)
+	instance.KernelId = emptyIfNil(actual.instance.KernelId)
 	instance.KeyName = emptyIfNil(actual.instance.KeyName)
-	instance.ImageID = emptyIfNil(actual.instance.ImageId)
+	instance.ImageId = emptyIfNil(actual.instance.ImageId)
 	instance.EbsOptimized = falseIfNil(actual.instance.EbsOptimized)
 	instance.ClientToken = emptyIfNil(actual.instance.ClientToken)
 	instance.BlockDeviceMappings = desired.BlockDeviceMappings
 	if actual.instance.CpuOptions != nil && *actual.instance.CpuOptions != (ec2.CpuOptions{}) {
-		cpuOptions := CPUOptions{
+		cpuOptions := CpuOptions{
 			CoreCount:      *actual.instance.CpuOptions.CoreCount,
 			ThreadsPerCore: *actual.instance.CpuOptions.ThreadsPerCore,
 		}
-		instance.CPUOptions = cpuOptions
+		instance.CpuOptions = &cpuOptions
 	}
 	if actual.instance.IamInstanceProfile != nil && *actual.instance.IamInstanceProfile != (ec2.IamInstanceProfile{}) {
 		iamInstanceProfile := IamInstanceProfile{
-			Arn:  *actual.instance.IamInstanceProfile.Arn,
-			Name: desired.IamInstanceProfile.Name,
-			ID:   *actual.instance.IamInstanceProfile.Id,
+			Arn: *actual.instance.IamInstanceProfile.Arn,
+			// Name: desired.IamInstanceProfile.Name,
+			Id: *actual.instance.IamInstanceProfile.Id,
 		}
-		instance.IamInstanceProfile = iamInstanceProfile
+		instance.IamInstanceProfile = &iamInstanceProfile
 	}
 	instance.Ipv6AddressCount = desired.Ipv6AddressCount
 	instance.Ipv6Addresses = desired.Ipv6Addresses
-	if desired.LaunchTemplate != (LaunchTemplateSpecification{}) {
+	if desired.LaunchTemplate != nil {
 		instance.LaunchTemplate = desired.LaunchTemplate
 	}
 	if actual.instance.Monitoring != nil && *actual.instance.Monitoring != (ec2.Monitoring{}) {
 		monitoring := Monitoring{
 			State: *actual.instance.Monitoring.State,
 		}
-		if desired.Monitoring != (Monitoring{}) {
+		if desired.Monitoring != nil {
 			monitoring.Enabled = desired.Monitoring.Enabled
 		}
-		instance.Monitoring = monitoring
+		instance.Monitoring = &monitoring
 	}
-	if actual.instance.NetworkInterfaces != nil && len(actual.instance.NetworkInterfaces) > 0 {
-		instance.NetworkInterfaces = nicFromAWS(desired.NetworkInterfaces, actual.instance.NetworkInterfaces)
-	}
+	// if actual.instance.NetworkInterfaces != nil && len(actual.instance.NetworkInterfaces) > 0 {
+	// 	instance.NetworkInterfaces = nicFromAWS(desired.NetworkInterfaces, actual.instance.NetworkInterfaces)
+	// }
 	if actual.instance.Placement != nil && *actual.instance.Placement != (ec2.Placement{}) {
 		p := actual.instance.Placement
-		instance.Placement = Placement{
+		instance.Placement = &Placement{
 			Affinity:         emptyIfNil(p.Affinity),
 			AvailabilityZone: emptyIfNil(p.AvailabilityZone),
 			GroupName:        emptyIfNil(p.GroupName),
-			HostID:           emptyIfNil(p.HostId),
+			HostId:           emptyIfNil(p.HostId),
 			SpreadDomain:     emptyIfNil(p.SpreadDomain),
 			Tenancy:          emptyIfNil(p.Tenancy),
 		}
 	}
 
-	instance.PrivateIPAddress = emptyIfNil(actual.instance.PrivateIpAddress)
-	instance.SubnetID = emptyIfNil(actual.instance.SubnetId)
+	instance.PrivateIpAddress = emptyIfNil(actual.instance.PrivateIpAddress)
+	instance.SubnetId = emptyIfNil(actual.instance.SubnetId)
 	instance.Tags = convertTags(actual.instance.Tags)
 
 	if len(desired.UserData) > 0 {
 		instance.UserData = desired.UserData
 	}
 
-	instance.OwnerID = emptyIfNil(actual.ownerID)
-	instance.RequesterID = emptyIfNil(actual.requesterID)
-	instance.ReservationID = emptyIfNil(actual.reservationID)
+	instance.OwnerId = emptyIfNil(actual.ownerId)
+	instance.RequesterId = emptyIfNil(actual.requesterId)
+	instance.ReservationId = emptyIfNil(actual.reservationId)
 	instance.AmiLaunchIndex = zeroIfNil(actual.instance.AmiLaunchIndex)
 	instance.Architecture = emptyIfNil(actual.instance.Architecture)
 	instance.EnaSupport = falseIfNil(actual.instance.EnaSupport)
 	instance.Hypervisor = emptyIfNil(actual.instance.Hypervisor)
-	instance.InstanceID = emptyIfNil(actual.instance.InstanceId)
+	instance.InstanceId = emptyIfNil(actual.instance.InstanceId)
 	instance.InstanceLifecycle = emptyIfNil(actual.instance.InstanceLifecycle)
 	instance.Platform = emptyIfNil(actual.instance.Platform)
 	//instance.LaunchTime = *actual.instance.LaunchTime TODO needed?
-	instance.PrivateDNSName = emptyIfNil(actual.instance.PrivateDnsName)
+	instance.PrivateDnsName = emptyIfNil(actual.instance.PrivateDnsName)
 
 	if actual.instance.ProductCodes != nil && len(actual.instance.ProductCodes) > 0 {
 		productCodes := []ProductCode{}
 		for _, pc := range actual.instance.ProductCodes {
 			p := ProductCode{
-				ProductCodeID:   *pc.ProductCodeId,
+				ProductCodeId:   *pc.ProductCodeId,
 				ProductCodeType: *pc.ProductCodeType,
 			}
 			productCodes = append(productCodes, p)
@@ -205,9 +208,9 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 		instance.ProductCodes = productCodes
 	}
 
-	instance.PublicDNSName = emptyIfNil(actual.instance.PublicDnsName)
-	instance.PublicIPAddress = emptyIfNil(actual.instance.PublicIpAddress)
-	instance.RamdiskID = emptyIfNil(actual.instance.RamdiskId)
+	instance.PublicDnsName = emptyIfNil(actual.instance.PublicDnsName)
+	instance.PublicIpAddress = emptyIfNil(actual.instance.PublicIpAddress)
+	instance.RamdiskId = emptyIfNil(actual.instance.RamdiskId)
 	instance.RootDeviceName = emptyIfNil(actual.instance.RootDeviceName)
 	instance.RootDeviceType = emptyIfNil(actual.instance.RootDeviceType)
 
@@ -215,7 +218,7 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 		sgs := []GroupIdentifier{}
 		for _, sg := range actual.instance.SecurityGroups {
 			gi := GroupIdentifier{
-				GroupID:   *sg.GroupId,
+				GroupId:   *sg.GroupId,
 				GroupName: *sg.GroupName,
 			}
 			sgs = append(sgs, gi)
@@ -224,18 +227,18 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 	}
 
 	instance.SourceDestCheck = falseIfNil(actual.instance.SourceDestCheck)
-	instance.SpotInstanceRequestID = emptyIfNil(actual.instance.SpotInstanceRequestId)
+	instance.SpotInstanceRequestId = emptyIfNil(actual.instance.SpotInstanceRequestId)
 	instance.SriovNetSupport = emptyIfNil(actual.instance.SriovNetSupport)
 
 	if actual.instance.State != nil && *actual.instance.State != (ec2.InstanceState{}) {
-		instance.State = InstanceState{
+		instance.State = &InstanceState{
 			Code: *actual.instance.State.Code,
 			Name: *actual.instance.State.Name,
 		}
 	}
 
 	if actual.instance.StateReason != nil && *actual.instance.StateReason != (ec2.StateReason{}) {
-		instance.StateReason = StateReason{
+		instance.StateReason = &StateReason{
 			Code:    *actual.instance.StateReason.Code,
 			Message: *actual.instance.StateReason.Message,
 		}
@@ -243,7 +246,7 @@ func (h *InstanceHandler) fromAWS(desired *Instance, actual *reservationInstance
 
 	instance.StateTransitionReason = emptyIfNil(actual.instance.StateTransitionReason)
 	instance.VirtualizationType = emptyIfNil(actual.instance.VirtualizationType)
-	instance.VpcID = emptyIfNil(actual.instance.VpcId)
+	instance.VpcId = emptyIfNil(actual.instance.VpcId)
 
 	return &instance
 }
@@ -261,13 +264,13 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 				NoDevice:    aws.String(m.NoDevice),
 				VirtualName: aws.String(m.VirtualName),
 			}
-			if m.Ebs != (EbsBlockDevice{}) {
+			if m.Ebs != nil {
 				ebsbd := &ec2.EbsBlockDevice{
 					DeleteOnTermination: aws.Bool(m.Ebs.DeleteOnTermination),
 					Encrypted:           aws.Bool(m.Ebs.Encrypted),
 					Iops:                aws.Int64(m.Ebs.Iops),
-					KmsKeyId:            aws.String(m.Ebs.KmsKeyID),
-					SnapshotId:          aws.String(m.Ebs.SnapshotID),
+					KmsKeyId:            aws.String(m.Ebs.KmsKeyId),
+					SnapshotId:          aws.String(m.Ebs.SnapshotId),
 					VolumeSize:          aws.Int64(m.Ebs.VolumeSize),
 					VolumeType:          aws.String(m.Ebs.VolumeType),
 				}
@@ -280,29 +283,29 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 
 	rii.ClientToken = nilIfEmpty(desired.ClientToken)
 
-	if desired.CPUOptions != (CPUOptions{}) {
+	if desired.CpuOptions != nil {
 		copts := &ec2.CpuOptionsRequest{
-			CoreCount:      aws.Int64(desired.CPUOptions.CoreCount),
-			ThreadsPerCore: aws.Int64(desired.CPUOptions.ThreadsPerCore),
+			CoreCount:      aws.Int64(desired.CpuOptions.CoreCount),
+			ThreadsPerCore: aws.Int64(desired.CpuOptions.ThreadsPerCore),
 		}
 		rii.CpuOptions = copts
 	}
 
 	// TODO implement CreditSpecification
 
-	rii.DisableApiTermination = aws.Bool(desired.DisableAPITermination)
+	rii.DisableApiTermination = aws.Bool(desired.DisableApiTermination)
 	rii.EbsOptimized = aws.Bool(desired.EbsOptimized)
 
 	// TODO implement ElasticGpuSpecification
 
-	if desired.IamInstanceProfile != (IamInstanceProfile{}) {
+	if desired.IamInstanceProfile != nil {
 		iip := &ec2.IamInstanceProfileSpecification{
 			Arn:  aws.String(desired.IamInstanceProfile.Arn),
 			Name: aws.String(desired.IamInstanceProfile.Name),
 		}
 		rii.IamInstanceProfile = iip
 	}
-	rii.ImageId = nilIfEmpty(desired.ImageID)
+	rii.ImageId = nilIfEmpty(desired.ImageId)
 	rii.InstanceInitiatedShutdownBehavior = nilIfEmpty(desired.InstanceInitiatedShutdownBehavior)
 
 	// TODO implement InstanceMarketOptions
@@ -321,12 +324,12 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 		rii.Ipv6Addresses = ipv6as
 	}
 
-	rii.KernelId = nilIfEmpty(desired.KernelID)
+	rii.KernelId = nilIfEmpty(desired.KernelId)
 	rii.KeyName = nilIfEmpty(desired.KeyName)
 
-	if desired.LaunchTemplate != (LaunchTemplateSpecification{}) {
+	if desired.LaunchTemplate != nil {
 		lt := &ec2.LaunchTemplateSpecification{}
-		lt.LaunchTemplateId = nilIfEmpty(desired.LaunchTemplate.LaunchTemplateID)
+		lt.LaunchTemplateId = nilIfEmpty(desired.LaunchTemplate.LaunchTemplateId)
 		lt.LaunchTemplateName = nilIfEmpty(desired.LaunchTemplate.LaunchTemplateName)
 		lt.Version = nilIfEmpty(desired.LaunchTemplate.Version)
 		rii.LaunchTemplate = lt
@@ -335,7 +338,7 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 	rii.MinCount = nilIfZero(desired.MinCount)
 
 	// This is a merge of the input/output monitoring objects
-	if desired.Monitoring != (Monitoring{}) {
+	if desired.Monitoring != nil {
 		m := &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(desired.Monitoring.Enabled),
 		}
@@ -343,79 +346,79 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 		rii.Monitoring = m
 	}
 
-	if len(desired.NetworkInterfaces) > 0 {
-		nifs := []*ec2.InstanceNetworkInterfaceSpecification{}
-		for _, n := range desired.NetworkInterfaces {
-			nif := &ec2.InstanceNetworkInterfaceSpecification{
-				AssociatePublicIpAddress: aws.Bool(n.AssociatePublicIPAddress),
-				DeleteOnTermination:      aws.Bool(n.DeleteOnTermination),
-			}
+	// if len(desired.NetworkInterfaces) > 0 {
+	// 	nifs := []*ec2.InstanceNetworkInterfaceSpecification{}
+	// 	for _, n := range desired.NetworkInterfaces {
+	// 		nif := &ec2.InstanceNetworkInterfaceSpecification{
+	// 			AssociatePublicIpAddress: aws.Bool(n.AssociatePublicIpAddress),
+	// 			DeleteOnTermination:      aws.Bool(n.DeleteOnTermination),
+	// 		}
 
-			nif.Description = nilIfEmpty(n.Description)
-			nif.DeviceIndex = aws.Int64(n.DeviceIndex)
+	// 		nif.Description = nilIfEmpty(n.Description)
+	// 		nif.DeviceIndex = aws.Int64(n.DeviceIndex)
 
-			if len(n.Groups) > 0 {
-				gs := []*string{}
-				for _, g := range n.Groups {
-					if len(g.GroupID) > 0 {
-						gs = append(gs, aws.String(g.GroupID))
-					}
-				}
-				nif.Groups = gs
-			}
+	// 		if len(n.Groups) > 0 {
+	// 			gs := []*string{}
+	// 			for _, g := range n.Groups {
+	// 				if len(g.GroupId) > 0 {
+	// 					gs = append(gs, aws.String(g.GroupId))
+	// 				}
+	// 			}
+	// 			nif.Groups = gs
+	// 		}
 
-			nif.Ipv6AddressCount = nilIfZero(n.Ipv6AddressCount)
+	// 		nif.Ipv6AddressCount = nilIfZero(n.Ipv6AddressCount)
 
-			if len(n.Ipv6Addresses) > 0 {
-				ipv6as := []*ec2.InstanceIpv6Address{}
-				for _, a := range n.Ipv6Addresses {
-					ipv6a := &ec2.InstanceIpv6Address{
-						Ipv6Address: aws.String(a.Ipv6Address),
-					}
-					ipv6as = append(ipv6as, ipv6a)
-				}
-				nif.Ipv6Addresses = ipv6as
-			}
+	// 		if len(n.Ipv6Addresses) > 0 {
+	// 			ipv6as := []*ec2.InstanceIpv6Address{}
+	// 			for _, a := range n.Ipv6Addresses {
+	// 				ipv6a := &ec2.InstanceIpv6Address{
+	// 					Ipv6Address: aws.String(a.Ipv6Address),
+	// 				}
+	// 				ipv6as = append(ipv6as, ipv6a)
+	// 			}
+	// 			nif.Ipv6Addresses = ipv6as
+	// 		}
 
-			nif.NetworkInterfaceId = nilIfEmpty(n.NetworkInterfaceID)
-			nif.PrivateIpAddress = nilIfEmpty(n.PrivateIPAddress)
+	// 		nif.NetworkInterfaceId = nilIfEmpty(n.NetworkInterfaceId)
+	// 		nif.PrivateIpAddress = nilIfEmpty(n.PrivateIpAddress)
 
-			if len(n.PrivateIPAddresses) > 0 {
-				pias := []*ec2.PrivateIpAddressSpecification{}
-				for _, a := range n.PrivateIPAddresses {
-					// TODO should we enforce the only one address can be primary here or leave it to the API
-					pia := &ec2.PrivateIpAddressSpecification{
-						Primary: aws.Bool(a.Primary),
-					}
+	// 		// if len(n.PrivateIpAddresses) > 0 {
+	// 		// 	pias := []*ec2.PrivateIpAddressSpecification{}
+	// 		// 	for _, a := range n.PrivateIpAddresses {
+	// 		// 		// TODO should we enforce the only one address can be primary here or leave it to the API
+	// 		// 		pia := &ec2.PrivateIpAddressSpecification{
+	// 		// 			Primary: aws.Bool(a.Primary),
+	// 		// 		}
 
-					nif.PrivateIpAddress = nilIfEmpty(n.PrivateIPAddress)
-					pias = append(pias, pia)
-				}
-				nif.PrivateIpAddresses = pias
-			}
-			nif.SecondaryPrivateIpAddressCount = nilIfZero(n.SecondaryPrivateIPAddressCount)
-			nif.SubnetId = nilIfEmpty(n.SubnetID)
+	// 		// 		nif.PrivateIpAddress = nilIfEmpty(n.PrivateIpAddress)
+	// 		// 		pias = append(pias, pia)
+	// 		// 	}
+	// 		// 	nif.PrivateIpAddresses = pias
+	// 		// }
+	// 		nif.SecondaryPrivateIpAddressCount = nilIfZero(n.SecondaryPrivateIpAddressCount)
+	// 		nif.SubnetId = nilIfEmpty(n.SubnetId)
 
-			nifs = append(nifs, nif)
-		}
+	// 		nifs = append(nifs, nif)
+	// 	}
 
-		rii.NetworkInterfaces = nifs
-	}
+	// 	rii.NetworkInterfaces = nifs
+	// }
 
-	if desired.Placement != (Placement{}) {
+	if desired.Placement != nil {
 		p := &ec2.Placement{}
 		p.Affinity = nilIfEmpty(desired.Placement.Affinity)
 		p.AvailabilityZone = nilIfEmpty(desired.Placement.AvailabilityZone)
 		p.GroupName = nilIfEmpty(desired.Placement.GroupName)
-		p.HostId = nilIfEmpty(desired.Placement.HostID)
+		p.HostId = nilIfEmpty(desired.Placement.HostId)
 		p.SpreadDomain = nilIfEmpty(desired.Placement.SpreadDomain)
 		p.Tenancy = nilIfEmpty(desired.Placement.Tenancy)
 		rii.Placement = p
 	}
 
-	rii.PrivateIpAddress = nilIfEmpty(desired.PrivateIPAddress)
-	rii.RamdiskId = nilIfEmpty(desired.RamdiskID)
-	rii.SubnetId = nilIfEmpty(desired.SubnetID)
+	rii.PrivateIpAddress = nilIfEmpty(desired.PrivateIpAddress)
+	rii.RamdiskId = nilIfEmpty(desired.RamdiskId)
+	rii.SubnetId = nilIfEmpty(desired.SubnetId)
 
 	if len(desired.UserData) > 0 {
 		rii.UserData = aws.String(base64.StdEncoding.EncodeToString([]byte(desired.UserData)))
@@ -428,8 +431,8 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 			if len(sg.GroupName) > 0 {
 				sgNames = append(sgNames, &sg.GroupName)
 			}
-			if len(sg.GroupID) > 0 {
-				sgIds = append(sgIds, &sg.GroupID)
+			if len(sg.GroupId) > 0 {
+				sgIds = append(sgIds, &sg.GroupId)
 			}
 		}
 		if len(sgNames) > 0 {
@@ -443,101 +446,101 @@ func runInstancesInput(desired Instance) *ec2.RunInstancesInput {
 	return rii
 }
 
-// TODO add an interface for conversion from AWS to our type across all providers, Marshaller/Unmarshaller
-func nicFromAWS(desired []InstanceNetworkInterface, actual []*ec2.InstanceNetworkInterface) []InstanceNetworkInterface {
-	nifMap := getNetworkInterfaceMap(desired)
+// // TODO add an interface for conversion from AWS to our type across all providers, Marshaller/Unmarshaller
+// func nicFromAWS(desired []InstanceNetworkInterface, actual []*ec2.InstanceNetworkInterface) []InstanceNetworkInterface {
+// 	nifMap := getNetworkInterfaceMap(desired)
 
-	instanceNetworkInterfaces := []InstanceNetworkInterface{}
-	for _, nif := range actual {
+// 	instanceNetworkInterfaces := []InstanceNetworkInterface{}
+// 	for _, nif := range actual {
 
-		w := nifMap[*nif.NetworkInterfaceId]
+// 		w := nifMap[*nif.NetworkInterfaceId]
 
-		n := InstanceNetworkInterface{
-			AssociatePublicIPAddress:       w.AssociatePublicIPAddress,
-			DeleteOnTermination:            w.DeleteOnTermination,
-			Description:                    *nif.Description,
-			DeviceIndex:                    w.DeviceIndex,
-			Ipv6AddressCount:               w.Ipv6AddressCount,
-			NetworkInterfaceID:             *nif.NetworkInterfaceId,
-			PrivateIPAddress:               *nif.PrivateIpAddress,
-			SecondaryPrivateIPAddressCount: w.SecondaryPrivateIPAddressCount,
-			SubnetID:                       *nif.SubnetId,
-			MacAddress:                     *nif.MacAddress,
-			OwnerID:                        *nif.OwnerId,
-			PrivateDNSName:                 *nif.PrivateDnsName,
-			SourceDestCheck:                *nif.SourceDestCheck,
-			Status:                         *nif.Status,
-			VpcID:                          *nif.VpcId,
-		}
+// 		n := InstanceNetworkInterface{
+// 			AssociatePublicIpAddress:       w.AssociatePublicIpAddress,
+// 			DeleteOnTermination:            w.DeleteOnTermination,
+// 			Description:                    *nif.Description,
+// 			DeviceIndex:                    w.DeviceIndex,
+// 			Ipv6AddressCount:               w.Ipv6AddressCount,
+// 			NetworkInterfaceId:             *nif.NetworkInterfaceId,
+// 			PrivateIpAddress:               *nif.PrivateIpAddress,
+// 			SecondaryPrivateIpAddressCount: w.SecondaryPrivateIpAddressCount,
+// 			SubnetId:                       *nif.SubnetId,
+// 			MacAddress:                     *nif.MacAddress,
+// 			OwnerId:                        *nif.OwnerId,
+// 			PrivateDnsName:                 *nif.PrivateDnsName,
+// 			SourceDestCheck:                *nif.SourceDestCheck,
+// 			Status:                         *nif.Status,
+// 			VpcId:                          *nif.VpcId,
+// 		}
 
-		if nif.Association != nil {
-			n.Association = InstanceNetworkInterfaceAssociation{
-				IPOwnerID:     *nif.Association.IpOwnerId,
-				PublicDNSName: *nif.Association.PublicDnsName,
-				PublicIP:      *nif.Association.PublicIp,
-			}
-		}
+// 		// if nif.Association != nil {
+// 		// 	n.Association = InstanceNetworkInterfaceAssociation{
+// 		// 		IpOwnerId:     *nif.Association.IpOwnerId,
+// 		// 		PublicDnsName: *nif.Association.PublicDnsName,
+// 		// 		PublicIp:      *nif.Association.PublicIp,
+// 		// 	}
+// 		// }
 
-		if nif.Attachment != nil {
-			n.Attachment = InstanceNetworkInterfaceAttachment{
-				AttachTime:          *nif.Attachment.AttachTime,
-				AttachmentID:        *nif.Attachment.AttachmentId,
-				DeleteOnTermination: *nif.Attachment.DeleteOnTermination,
-				DeviceIndex:         *nif.Attachment.DeviceIndex,
-				Status:              *nif.Attachment.Status,
-			}
-		}
+// 		// if nif.Attachment != nil {
+// 		// 	n.Attachment = InstanceNetworkInterfaceAttachment{
+// 		// 		// AttachTime:          *nif.Attachment.AttachTime,
+// 		// 		AttachmentId:        *nif.Attachment.AttachmentId,
+// 		// 		DeleteOnTermination: *nif.Attachment.DeleteOnTermination,
+// 		// 		DeviceIndex:         *nif.Attachment.DeviceIndex,
+// 		// 		Status:              *nif.Attachment.Status,
+// 		// 	}
+// 		// }
 
-		if nif.Groups != nil {
-			gis := []GroupIdentifier{}
-			for _, f := range nif.Groups {
-				gi := GroupIdentifier{
-					GroupID:   *f.GroupId,
-					GroupName: *f.GroupName,
-				}
-				gis = append(gis, gi)
-			}
-			n.Groups = gis
-		}
+// 		if nif.Groups != nil {
+// 			gis := []GroupIdentifier{}
+// 			for _, f := range nif.Groups {
+// 				gi := GroupIdentifier{
+// 					GroupId:   *f.GroupId,
+// 					GroupName: *f.GroupName,
+// 				}
+// 				gis = append(gis, gi)
+// 			}
+// 			n.Groups = gis
+// 		}
 
-		if nif.Ipv6Addresses != nil {
-			addresses := []InstanceIpv6Address{}
-			for _, a := range nif.Ipv6Addresses {
-				// TODO collapse this down into just the string?
-				address := InstanceIpv6Address{
-					Ipv6Address: *a.Ipv6Address,
-				}
-				addresses = append(addresses, address)
-			}
-			n.Ipv6Addresses = addresses
-		}
+// 		if nif.Ipv6Addresses != nil {
+// 			addresses := []InstanceIpv6Address{}
+// 			for _, a := range nif.Ipv6Addresses {
+// 				// TODO collapse this down into just the string?
+// 				address := InstanceIpv6Address{
+// 					Ipv6Address: *a.Ipv6Address,
+// 				}
+// 				addresses = append(addresses, address)
+// 			}
+// 			n.Ipv6Addresses = addresses
+// 		}
 
-		if nif.PrivateIpAddresses != nil {
-			addresses := []InstancePrivateIPAddress{}
-			for _, a := range nif.PrivateIpAddresses {
-				// TODO collapse this down into just the string?
-				address := InstancePrivateIPAddress{
-					Primary:          *a.Primary,
-					PrivateDNSName:   *a.PrivateDnsName,
-					PrivateIPAddress: *a.PrivateIpAddress,
-				}
-				addresses = append(addresses, address)
-			}
-			n.PrivateIPAddresses = addresses
-		}
+// 		// if nif.PrivateIpAddresses != nil {
+// 		// 	addresses := []InstancePrivateIpAddress{}
+// 		// 	for _, a := range nif.PrivateIpAddresses {
+// 		// 		// TODO collapse this down into just the string?
+// 		// 		address := InstancePrivateIpAddress{
+// 		// 			Primary:          *a.Primary,
+// 		// 			PrivateDnsName:   *a.PrivateDnsName,
+// 		// 			PrivateIpAddress: *a.PrivateIpAddress,
+// 		// 		}
+// 		// 		addresses = append(addresses, address)
+// 		// 	}
+// 		// 	n.PrivateIpAddresses = addresses
+// 		// }
 
-		instanceNetworkInterfaces = append(instanceNetworkInterfaces, n)
-	}
-	return instanceNetworkInterfaces
-}
+// 		instanceNetworkInterfaces = append(instanceNetworkInterfaces, n)
+// 	}
+// 	return instanceNetworkInterfaces
+// }
 
-func getNetworkInterfaceMap(desired []InstanceNetworkInterface) map[string]InstanceNetworkInterface {
-	nifMap := map[string]InstanceNetworkInterface{}
-	for _, ni := range desired {
-		nifMap[ni.NetworkInterfaceID] = ni
-	}
-	return nifMap
-}
+// func getNetworkInterfaceMap(desired []InstanceNetworkInterface) map[string]InstanceNetworkInterface {
+// 	nifMap := map[string]InstanceNetworkInterface{}
+// 	for _, ni := range desired {
+// 		nifMap[ni.NetworkInterfaceId] = ni
+// 	}
+// 	return nifMap
+// }
 
 // The SDK waiters appear to be broken (see go-labs example) - WaitUntilInstanceRunning
 // Implmenting my own waiter
@@ -560,52 +563,30 @@ func waitForInstanceState(client *ec2.EC2, externalID string) error {
 	})
 }
 
-func (h *InstanceHandler) getInstance(client *ec2.EC2, desired Instance) (*Instance, error) {
-	input := &ec2.DescribeInstancesInput{
-		Filters: []*ec2.Filter{
-			{
-				Name: aws.String("instance-state-code"),
-				// TODO what states are appropriate here, including pending/stopped/stopping as
-				// the instance *still* exists at this point so creating it again doesn't seem
-				// to be appropriate
-				Values: []*string{
-					aws.String(instanceStateCodePending),
-					aws.String(instanceStateCodeRunning),
-					aws.String(instanceStateCodeStopped),
-					aws.String(instanceStateCodeStopping),
-				},
-			},
-		},
-		MaxResults: aws.Int64(5), // TODO broad error handling question here where you actual multiple
-	}
-	// TODO what to do with reservations? (not considering spot in that question yet)
-	describeOutput, err := client.DescribeInstances(input)
-
-	// TODO currently grabbing all instances into a bucket, not doing anything smart here
+func (h *InstanceHandler) getInstance(client *ec2.EC2, externalID string) (*Instance, error) {
+	describeOutput, err := client.DescribeInstances(&ec2.DescribeInstancesInput{
+		InstanceIds: []*string{aws.String(externalID)},
+	})
 	instances := []reservationInstance{}
 	for _, r := range describeOutput.Reservations {
 		for _, i := range r.Instances {
 			ri := reservationInstance{
-				reservationID: r.ReservationId,
-				requesterID:   r.RequesterId,
-				ownerID:       r.OwnerId,
+				reservationId: r.ReservationId,
+				requesterId:   r.RequesterId,
+				ownerId:       r.OwnerId,
 				instance:      i,
 			}
 			instances = append(instances, ri)
 		}
 	}
-
 	switch {
 	case err != nil:
 		return nil, err
 	case len(instances) > 1:
-		return nil, errors.New("more than one Instance reservation with matching logical ID found")
+		return nil, fmt.Errorf("more than one Instance reservation with matching externalID (%v) found", externalID)
 	case len(instances) == 0:
 		return nil, nil
 	}
-	result := h.fromAWS(&desired, &instances[0])
-
-	// see DescribeInstanceAttribute
-
+	result := h.fromAWS(&Instance{}, &instances[0])
 	return result, nil
 }

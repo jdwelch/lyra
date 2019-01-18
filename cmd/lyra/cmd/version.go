@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/mgutz/ansi"
+	"github.com/lyraproj/lyra/cmd/lyra/ui"
+	"github.com/lyraproj/lyra/pkg/i18n"
 	"github.com/lyraproj/lyra/pkg/version"
 
 	"github.com/spf13/cobra"
@@ -13,16 +13,21 @@ import (
 // NewVersionCmd returns the version subcommand
 func NewVersionCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "version",
-		Short:   "Version of the Lyra client",
-		Example: fmt.Sprintf("%s version", os.Args[0]),
+		Use:     i18n.T("versionCmdUse"),
+		Short:   i18n.T("versionCmdShort"),
+		Long:    i18n.T("versionCmdLong"),
+		Example: i18n.T("versionCmdExample"),
 		Run:     runVersion,
 	}
+
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
+
 	return cmd
 }
 
 func runVersion(cmd *cobra.Command, args []string) {
-	fmt.Printf("%s%s%s%v\n", ansi.Blue, version.LogoFiglet, ansi.Reset, prettyPrintVersion())
+	fmt.Printf("%v\n", prettyPrintVersion())
 }
 
 func prettyPrintVersion() string {

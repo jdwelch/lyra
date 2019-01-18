@@ -16,8 +16,6 @@ const (
 	logicalIDTag = "lyra-logical-id"
 )
 
-var log = hclog.Default()
-
 // newClient() creates a new ec2 client
 func newClient() *ec2.EC2 {
 	config := aws.NewConfig().
@@ -35,13 +33,13 @@ func newClient() *ec2.EC2 {
 }
 
 func tagResource(client ec2.EC2, tags map[string]string, resourceIds ...*string) error {
-	if len(resourceIds) == 0 || tags == nil || len(tags) == 0 {
-		log.Debug("Nothing to tag", "resourceIds", resourceIds, "tags", tags)
+	awsTags := tagsToAws(tags)
+	return tagResource2(client, awsTags, resourceIds...)
+}
+func tagResource2(client ec2.EC2, awsTags []*ec2.Tag, resourceIds ...*string) error {
+	if len(resourceIds) == 0 || awsTags == nil || len(awsTags) == 0 {
+		hclog.Default().Debug("Nothing to tag", "resourceIds", resourceIds, "awsTags", awsTags)
 		return nil
-	}
-	awsTags := []*ec2.Tag{}
-	for k, v := range tags {
-		awsTags = append(awsTags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 	_, err := client.CreateTags(
 		&ec2.CreateTagsInput{
@@ -50,11 +48,18 @@ func tagResource(client ec2.EC2, tags map[string]string, resourceIds ...*string)
 			Tags:      awsTags,
 		})
 	if err != nil {
-		log.Debug("Error tagging", "error", err, "resourceIds", resourceIds, "tags", tags, "awsTags", awsTags)
+		hclog.Default().Debug("Error tagging", "error", err, "resourceIds", resourceIds, "awsTags", awsTags)
 	}
 	return err
 }
 
+func tagsToAws(tags map[string]string) []*ec2.Tag {
+	awsTags := []*ec2.Tag{}
+	for k, v := range tags {
+		awsTags = append(awsTags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	return awsTags
+}
 func convertTags(ec2Tags []*ec2.Tag) map[string]string {
 	result := map[string]string{}
 	for _, t := range ec2Tags {
@@ -74,7 +79,7 @@ func pollWithoutDefaults(backoff time.Duration, retries int32, fn func() (bool, 
 		}
 		jitter := time.Duration(rand.Int63n(int64(backoff)))
 		backoff = 2 * (backoff + jitter/2)
-		log.Debug("...waiting", "duration", backoff.String())
+		hclog.Default().Debug("...waiting", "duration", backoff.String())
 		time.Sleep(backoff)
 	}
 	return errors.New("polling exhausted retries")

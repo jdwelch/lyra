@@ -31,9 +31,14 @@ var (
 
 // NewRootCmd returns the root command
 func NewRootCmd() *cobra.Command {
+
+	// Set up gettext
+	i18n.Configure("locales", "en_US", "default")
+
 	cmd := &cobra.Command{
-		Use:              "lyra",
-		Short:            "Create and configure infrastructure and resources",
+		Use:              i18n.T("rootCmdUse"),
+		Short:            i18n.T("rootCmdShort"),
+		Long:             i18n.T("rootCmdLong"),
 		Run:              runHelp,
 		PersistentPreRun: initialiseTool,
 		Version:          fmt.Sprintf("%v", version.Get()),
@@ -41,9 +46,9 @@ func NewRootCmd() *cobra.Command {
 
 	cmd.PersistentFlags().BoolVarP(&assumeYes, "assume-yes", "y", false, "Bypass any y/n prompts, answering yes")
 	cmd.PersistentFlags().BoolVarP(&chaos, "chaos", "c", false, "")
-	cmd.PersistentFlags().BoolVar(&debug, "debug", false, "Sets log level to debug")
+	cmd.PersistentFlags().BoolVar(&debug, "debug", false, i18n.T("rootFlagDebug"))
 	cmd.PersistentFlags().BoolVar(&jsonlogs, "jsonlogs", false, "Output logs in JSON format")
-	cmd.PersistentFlags().StringVar(&loglevel, "loglevel", "", "Set log level which can be one of; fatal, error, warn, info, debug. Defaults to fatal.")
+	cmd.PersistentFlags().StringVar(&loglevel, "loglevel", "", i18n.T("rootFlagLoglevel"))
 	cmd.PersistentFlags().BoolVar(&noop, "dry-run", false, "Dry-run, no-op mode")
 	cmd.PersistentFlags().BoolVarP(&outline, "outline", "o", false, "")
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show verbose output")
@@ -57,8 +62,10 @@ func NewRootCmd() *cobra.Command {
 	viper.BindPFlag("loglevel", cmd.PersistentFlags().Lookup("loglevel"))
 	viper.BindPFlag("assume-yes", cmd.PersistentFlags().Lookup("assume-yes"))
 
-	cmd.SetHelpTemplate(ansi.Blue + version.LogoFiglet + ansi.Reset + cmd.HelpTemplate())
-
+ 	cmd.AddCommand(NewVersionCmd())
+	cmd.AddCommand(NewApplyCmd())
+	cmd.AddCommand(NewControllerCmd())
+	cmd.AddCommand(NewValidateCmd())
 	cmd.AddCommand(EmbeddedPluginCmd())
 	cmd.AddCommand(NewApplyMockCmd()) //TODO: Remember this does nothing real
 	cmd.AddCommand(NewApplyEnvCmd())

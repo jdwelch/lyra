@@ -2,6 +2,7 @@ package resource
 
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/go-hclog"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -10,7 +11,7 @@ import (
 type KeyPair struct {
 	PublicKeyMaterial string // Maybe should be []byte?
 	KeyName           string
-	KeyFingerprint    string
+	KeyFingerprint    string `puppet:"type=>String, value=>''"`
 }
 
 //KeyPairHandler creates, reads and deletes the KeyPair Resource
@@ -18,6 +19,7 @@ type KeyPairHandler struct{}
 
 // Create a KeyPair
 func (h *KeyPairHandler) Create(desired *KeyPair) (*KeyPair, string, error) {
+	log := hclog.Default()
 	log.Debug("Creating KeyPair", "desired", desired)
 	client := newClient()
 	response, err := client.ImportKeyPair(
@@ -51,6 +53,7 @@ func (h *KeyPairHandler) Create(desired *KeyPair) (*KeyPair, string, error) {
 
 // Read a KeyPair
 func (h *KeyPairHandler) Read(externalID string) (*KeyPair, error) {
+	log := hclog.Default()
 	log.Debug("Reading KeyPair", "externalID", externalID)
 	client := newClient()
 	response, err := client.DescribeKeyPairs(
@@ -80,6 +83,7 @@ func (h *KeyPairHandler) Read(externalID string) (*KeyPair, error) {
 
 // Delete a KeyPair
 func (h *KeyPairHandler) Delete(externalID string) error {
+	log := hclog.Default()
 	log.Debug("Deleting KeyPair", "externalID", externalID)
 	client := newClient()
 	_, err := client.DeleteKeyPair(
