@@ -71,7 +71,7 @@ func runDestroy(cmd *cobra.Command, args []string) {
 `)
 
 	if !noop {
-		c := ui.AskForConfirmation("Sure you want to do this?", assumeYes)
+		c := ui.AskForConfirmation("Sure you want to do this?")
 		if c {
 			ui.ProgressBar("Destroying ec2_instance 'myapp-vm-1'", 1500, false)
 			ui.ResourceDestroy("ec2_instance 'myapp-vm-1'")
