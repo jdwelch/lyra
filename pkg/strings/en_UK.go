@@ -31,11 +31,11 @@ const (
 	DestroyCmdShortDesc = "Destroy infrastructure resources"
 	DestroyCmdLongDesc  = "Destroy infrastructure resources"
 
-	InitCmdName      = "init"
-	InitCmdUsage     = InitCmdName + " <template name>"
-	InitCmdExample   = examplePadding + RootCmdName + " " + InitCmdName + " " + exampleTemplate
-	InitCmdShortDesc = "Initialise a new Lyra project"
-	InitCmdLongDesc  = "Initialise a new Lyra project"
+	CreateCmdName      = "create"
+	CreateCmdUsage     = CreateCmdName + " <template name>"
+	CreateCmdExample   = examplePadding + RootCmdName + " " + CreateCmdName + " " + exampleTemplate
+	CreateCmdShortDesc = "Create a new Lyra workflow package"
+	CreateCmdLongDesc  = "Create a new Lyra workflow package"
 
 	PlanCmdName      = "plan"
 	PlanCmdUsage     = PlanCmdName + " <" + sourceLabel + ">"

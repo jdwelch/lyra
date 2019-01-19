@@ -29,7 +29,7 @@ func NewShowCmd() *cobra.Command {
 			return nil
 		},
 		Run:        runShow,
-		SuggestFor: []string{"view", "describe"},
+		SuggestFor: []string{"describe", "get", "list", "ls", "view"},
 	}
 
 	cmd.SetHelpTemplate(t.HelpTemplate)

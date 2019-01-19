@@ -24,15 +24,15 @@ type LyraPlugin struct {
 	LanguageExt string
 }
 
-// NewInitCmd returns the init subcommand
-func NewInitCmd() *cobra.Command {
+// NewCreateCmd returns the create subcommand
+func NewCreateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:        t.InitCmdName,
-		Example:    t.InitCmdExample,
-		Short:      t.InitCmdShortDesc,
-		Long:       t.InitCmdLongDesc,
-		Run:        runInit,
+		Use:        t.CreateCmdName,
+		Example:    t.CreateCmdExample,
+		Short:      t.CreateCmdShortDesc,
+		Long:       t.CreateCmdLongDesc,
+		Run:        runCreate,
 		SuggestFor: []string{"new"},
 	}
 
@@ -42,7 +42,7 @@ func NewInitCmd() *cobra.Command {
 	return cmd
 }
 
-func runInit(cmd *cobra.Command, args []string) {
+func runCreate(cmd *cobra.Command, args []string) {
 
 	name := "my-project"
 

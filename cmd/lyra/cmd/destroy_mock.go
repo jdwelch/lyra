@@ -26,7 +26,7 @@ func NewDestroyCmd() *cobra.Command {
 			return nil
 		},
 		Run:        runDestroy,
-		SuggestFor: []string{"delete", "remove", "undeploy"},
+		SuggestFor: []string{"delete", "remove"},
 	}
 
 	cmd.SetHelpTemplate(t.HelpTemplate)
