@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"os/user"
 	"strings"
 
 	"github.com/lyraproj/lyra/cmd/lyra/ui"
@@ -19,7 +20,8 @@ import (
 // LyraPlugin is metadata about the project
 type LyraPlugin struct {
 	Name        string `survey:"name"`
-	Template    string `survey:"platform"`
+	Author      string
+	Version     string
 	Language    string `survey:"language"`
 	LanguageExt string
 }
@@ -45,6 +47,9 @@ func NewCreateCmd() *cobra.Command {
 func runCreate(cmd *cobra.Command, args []string) {
 
 	name := "my-project"
+	author := whoAmI()
+	version := "0.1.0"
+	language := "puppet"
 
 	if len(args) > 0 {
 		name = args[0]
@@ -55,7 +60,7 @@ func runCreate(cmd *cobra.Command, args []string) {
 		{
 			Name: "name",
 			Prompt: &survey.Input{
-				Message: "What would you like to call this Lyra plugin?",
+				Message: "What would you like to call this Lyra package?",
 				Default: name,
 			},
 			// FIXME: Also validate for proper format
@@ -68,32 +73,19 @@ func runCreate(cmd *cobra.Command, args []string) {
 			Transform: survey.ToLower,
 		},
 		{
-			Name: "template",
-			Prompt: &survey.Select{
-				Message: "Choose a template:",
-				Options: []string{
-					// TODO: Read these from a repo somewhere else
-					"aws-iaas",
-					"faas (cloud-agnostic)",
-					"google kubernetes engine",
-				},
-				Default: "aws",
-			},
-		},
-		{
 			Name: "language",
 			Prompt: &survey.Select{
 				Message: "Choose a language:",
-				// FIXME: Translate these to file extensions
 				Options: []string{"puppet", "yaml", "typescript"},
-				Default: "puppet",
+				Default: language,
 			},
 		},
 	}
 
 	answers := LyraPlugin{
 		`survey: "name"`,
-		`survey: "template"`,
+		author,
+		version,
 		`survey: "language"`,
 		".ext",
 	}
@@ -111,56 +103,52 @@ func runCreate(cmd *cobra.Command, args []string) {
 
 }
 
-func createManifestScaffold(stack LyraPlugin) {
+func createManifestScaffold(wf LyraPlugin) {
 
 	// FIXME: This seems stupid.
-	if stack.Language == "puppet" {
-		stack.LanguageExt = "pp"
+	if wf.Language == "puppet" {
+		wf.LanguageExt = "pp"
 	}
 
-	if stack.Language == "yaml" {
-		stack.LanguageExt = "yaml"
+	if wf.Language == "yaml" {
+		wf.LanguageExt = "yaml"
 	}
 
-	if stack.Language == "typescript" {
-		stack.LanguageExt = "ts"
+	if wf.Language == "typescript" {
+		wf.LanguageExt = "ts"
 	}
 
-	modulename := strings.ToLower(stack.Name)
-	moduledirectory := strings.ToLower(stack.Name)
+	pkgname := strings.ToLower(wf.Name)
+	pkgdirectory := strings.ToLower(wf.Name)
 
-	manifestdir := moduledirectory + ""
-	manifestfile := manifestdir + "/" + modulename + "-manifest." + stack.LanguageExt
+	wfdir := pkgdirectory + "/workflows"
+	wffile := wfdir + "/" + pkgname + "-default." + wf.LanguageExt
 
-	datadir := moduledirectory + ""
-	datafile := datadir + "/" + modulename + "-vars.yaml"
+	datafile := pkgdirectory + "/" + "values.yaml"
 
-	taskdir := moduledirectory + "/tasks"
+	metadatafile := pkgdirectory + "/" + "metadata.yaml"
 
-	mkScaffoldDir(moduledirectory)
-	mkScaffoldDir(datadir)
-	mkScaffoldDir(manifestdir)
-	mkScaffoldDir(taskdir)
+	mkScaffoldDir(pkgdirectory)
+	mkScaffoldDir(wfdir)
 
-	// This is stupid
-	// FIXME: Stop doing stupid
-	if stack.Language == "puppet" {
-		generateFileFromTemplate(stack, manifestfile, puppetTemplate)
+	generateFileFromTemplate(wf, metadatafile, metadataTemplate)
+	generateFileFromTemplate(wf, datafile, dataTemplate)
+
+	if wf.Language == "puppet" {
+		generateFileFromTemplate(wf, wffile, puppetTemplate)
 	}
-	if stack.Language == "yaml" {
-		generateFileFromTemplate(stack, manifestfile, yamlTemplate)
+	if wf.Language == "yaml" {
+		generateFileFromTemplate(wf, wffile, yamlTemplate)
 	}
-	if stack.Language == "typescript" {
-		generateFileFromTemplate(stack, manifestfile, typescriptTemplate)
+	if wf.Language == "typescript" {
+		generateFileFromTemplate(wf, wffile, typescriptTemplate)
 	}
-
-	generateFileFromTemplate(stack, datafile, yamlDataTemplate)
 
 	ui.Success("Created a new Lyra project scaffold with this structure:")
 
-	showModuleStructure(stack)
+	showPkgStructure(wf)
 
-	fmt.Println("\nYour project is ready to use. Run 'lyra apply " + manifestfile + " --data " + datafile + "'\n")
+	fmt.Println("\nYour project is ready to use. Run 'lyra apply " + wffile + " --data " + datafile + "'\n")
 
 }
 
@@ -199,17 +187,17 @@ func generateFileFromTemplate(stack LyraPlugin, filename string, filetemplate st
 	fmt.Fprintf(file, buf.String())
 }
 
-func showModuleStructure(stack LyraPlugin) {
+func showPkgStructure(wf LyraPlugin) {
 	log := logger.Get()
 	buf := new(bytes.Buffer)
 
-	tmpl, err := template.New(stack.Name).Parse(directoryTree)
+	tmpl, err := template.New(wf.Name).Parse(directoryTree)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	buf.Reset()
-	err = tmpl.Execute(buf, stack)
+	err = tmpl.Execute(buf, wf)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -217,64 +205,38 @@ func showModuleStructure(stack LyraPlugin) {
 	fmt.Printf(buf.String())
 }
 
+func whoAmI() string {
+	log := logger.Get()
+	user, err := user.Current()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	return user.Username
+}
+
 // FIXME: Move this into proper files and stuff
 // Or not. You get the idea either way.
 const (
-	puppetTemplate = `# This is an auto-generated scaffold of a Lyra plugin
-# for Amazon Web Services. For detailed documentation,
+	puppetTemplate = `# This is an auto-generated scaffold 
+# of a Lyra workflow. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
-
-lyra::aws::instance { '{{.Name}}-instance':
-  ensure             => 'present',
-  region             => lookup('aws_region'),
-  image_id           => lookup('image_id'),
-  instance_type      => lookup't2.micro',
-  key_name           => lookup(env.'my_aws_key'),
-  tag_specifications => [ Lyra::Aws::Tagspecification ({
-    'resource_type' => 'instance',
-    'tags'          => {
-      'created_by' => 'admin@example.com',
-      'department' => 'engineering',
-      'project'    => 'incubator',
-    }
-  }) ],
-} -> notice("Created EC2 Instance, ID: ${resource(Lyra::Aws::Instance['{{.Name}}-instance']).instance_id}, PrivateIP: ${resource(Lyra::Aws::Instance['{{.Name}}-instance']).private_ip_address}, PublicIP: ${resource(Lyra::Aws::Instance['{{.Name}}-instance']).public_ip_address}\n")
-
-$install_nginx = @("INSTALL_NGINX"/L)
-sudo apt -y update
-sudo apt -y install nginx
-sudo rm -rf /var/www/html/index.html
-echo "<html><head><title>Installed by Lyra</title></head><body><h1>INSTALLED BY LYRA</h1></body></html>" | sudo tee /var/www/html/index.html
-| INSTALL_NGINX
-
-lyra::ssh::exec { '{{.Name}}-exec':
-  ensure  => present,
-  host    => resource(Lyra::Aws::Instance['{{.Name}}-instance']).public_ip_address,
-  user    => 'ubuntu',
-  command => $install_nginx,
-  port    => 22,
-} ->
-notice("Installed NGinx: http://${resource(Lyra::Aws::Instance['{{.Name}}-instance']).public_ip_address}\n")
+# TODO: WORKFLOW (in Puppet) HERE!
 `
 
-	yamlTemplate = `sequential:
-  foo:
-    bar:
-`
-	typescriptTemplate = `var tier1 = function() {
-  {{.Name}}
-  resources({
-    'lyra::aws::importkeypair': {
-      'myapp-keypair': {
-        ensure: 'present',
-        region: region,
-        public_key_material: public_key
-      }
-    },
-  });
+	yamlTemplate = `# This is an auto-generated scaffold
+# of a Lyra workflow. For detailed documentation, 
+# see https://github.com/lyraproj/lyra/docs/getting-started.md
+---
+# TODO: WORKFLOW (in YAML) HERE!
 `
 
-	yamlDataTemplate = `# This is an auto-genereated scaffold
+	typescriptTemplate = `# This is an auto-generated scaffold 
+# of a Lyra workflow. For detailed documentation, 
+# see https://github.com/lyraproj/lyra/docs/getting-started.md
+TODO: WORKFLOW (in TypeScript) HERE!
+`
+
+	dataTemplate = `# This is an auto-genereated scaffold
 # of a Lyra data file. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 ---
@@ -282,9 +244,24 @@ aws_region: 'us-west-2'
 image_id: 'ami-b63ae0ce'
 `
 
+	// FIXME: Make this match what actually happens instead of faking it so badly
 	directoryTree = `{{.Name}}
-├── {{.Name}}-manifest.{{.LanguageExt}}
-├── {{.Name}}-vars.yaml
-└── tasks
+├── metadata.yaml
+├── values.yaml
+└── workflows
+    └──{{.Name}}-default.{{.LanguageExt}}
+`
+
+	metadataTemplate = `# This is an auto-genereated scaffold
+# of a Lyra package metadata file. For detailed documentation,
+# see https://github.com/lyraproj/lyra/docs/getting-started.md
+---
+apiVersion: v1
+name: {{.Name}}
+author: {{.Author}}
+description: "A lovely Lyra workflow."
+version: 0.1.0
+license: "Apache 2"
+url: "gh.com/foo/bar"
 `
 )
