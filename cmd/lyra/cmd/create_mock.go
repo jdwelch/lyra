@@ -93,18 +93,31 @@ func runCreate(cmd *cobra.Command, args []string) {
 	fmt.Println("Just answer these questions:")
 
 	err := survey.Ask(qs, &answers)
+
 	if err != nil {
 		log.Error("No answer", "error", err)
 		os.Exit(0)
 	}
 
 	createManifestScaffold(answers)
-
 }
 
 func createManifestScaffold(wf LyraPlugin) {
 
-	// FIXME: This seems stupid.
+	// Generate package directory
+	pkgname := strings.ToLower(wf.Name)
+	pkgdirectory := strings.ToLower(wf.Name)
+	mkScaffoldDir(pkgdirectory)
+
+	// Generate metadata
+	metadatafile := pkgdirectory + "/" + "metadata.yaml"
+	generateFileFromTemplate(wf, metadatafile, metadataTemplate)
+
+	// Generate workflow template
+	wfdir := pkgdirectory + "/workflows"
+	mkScaffoldDir(wfdir)
+
+	// FIXME: This manual mapping seems stupid.
 	if wf.Language == "puppet" {
 		wf.LanguageExt = "pp"
 	}
@@ -117,38 +130,34 @@ func createManifestScaffold(wf LyraPlugin) {
 		wf.LanguageExt = "ts"
 	}
 
-	pkgname := strings.ToLower(wf.Name)
-	pkgdirectory := strings.ToLower(wf.Name)
-
-	wfdir := pkgdirectory + "/workflows"
 	wffile := wfdir + "/" + pkgname + "-default." + wf.LanguageExt
 
-	datafile := pkgdirectory + "/" + "values.yaml"
-
-	metadatafile := pkgdirectory + "/" + "metadata.yaml"
-
-	mkScaffoldDir(pkgdirectory)
-	mkScaffoldDir(wfdir)
-
-	generateFileFromTemplate(wf, metadatafile, metadataTemplate)
-	generateFileFromTemplate(wf, datafile, dataTemplate)
-
 	if wf.Language == "puppet" {
-		generateFileFromTemplate(wf, wffile, puppetTemplate)
+		generateFileFromTemplate(wf, wffile, puppetWfTemplate)
 	}
 	if wf.Language == "yaml" {
-		generateFileFromTemplate(wf, wffile, yamlTemplate)
+		generateFileFromTemplate(wf, wffile, yamlWfTemplate)
 	}
 	if wf.Language == "typescript" {
-		generateFileFromTemplate(wf, wffile, typescriptTemplate)
+		generateFileFromTemplate(wf, wffile, typescriptWfTemplate)
 	}
 
-	ui.Success("Created a new Lyra project scaffold with this structure:")
+	// Generate sample data
+	datafile := pkgdirectory + "/" + "values.yaml"
+	generateFileFromTemplate(wf, datafile, dataTemplate)
 
+	// Generate sample k8s object spec
+	objectspec := pkgdirectory + "/" + "object-spec.yaml"
+	generateFileFromTemplate(wf, objectspec, specTemplate)
+
+	// Generate readme
+	readme := pkgdirectory + "/" + "README.md"
+	generateFileFromTemplate(wf, readme, readmeTemplate)
+
+	ui.Success("Created a new Lyra project scaffold with this structure:")
 	showPkgStructure(wf)
 
-	fmt.Println("\nYour project is ready to use. Run 'lyra apply " + wffile + " --data " + datafile + "'\n")
-
+	fmt.Println("\nYour workflow is ready to use. Run 'lyra apply " + wffile + " --data " + datafile + "'\n")
 }
 
 func mkScaffoldDir(path string) {
@@ -213,23 +222,32 @@ func whoAmI() string {
 	return user.Username
 }
 
-// FIXME: Move this into proper files and stuff
-// Or not. You get the idea either way.
 const (
-	puppetTemplate = `# This is an auto-generated scaffold 
+
+	// FIXME: Make this match what actually happens instead of faking it so badly
+	directoryTree = `{{.Name}}
+├── README.md
+├── metadata.yaml
+├── object-spec.yaml
+├── values.yaml
+└── workflows
+    └──{{.Name}}-default.{{.LanguageExt}}
+`
+
+	puppetWfTemplate = `# This is an auto-generated scaffold 
 # of a Lyra workflow. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 # TODO: WORKFLOW (in Puppet) HERE!
 `
 
-	yamlTemplate = `# This is an auto-generated scaffold
+	yamlWfTemplate = `# This is an auto-generated scaffold
 # of a Lyra workflow. For detailed documentation, 
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 ---
 # TODO: WORKFLOW (in YAML) HERE!
 `
 
-	typescriptTemplate = `# This is an auto-generated scaffold 
+	typescriptWfTemplate = `# This is an auto-generated scaffold 
 # of a Lyra workflow. For detailed documentation, 
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 TODO: WORKFLOW (in TypeScript) HERE!
@@ -241,14 +259,6 @@ TODO: WORKFLOW (in TypeScript) HERE!
 ---
 aws_region: 'us-west-2'
 image_id: 'ami-b63ae0ce'
-`
-
-	// FIXME: Make this match what actually happens instead of faking it so badly
-	directoryTree = `{{.Name}}
-├── metadata.yaml
-├── values.yaml
-└── workflows
-    └──{{.Name}}-default.{{.LanguageExt}}
 `
 
 	metadataTemplate = `# This is an auto-genereated scaffold
@@ -263,4 +273,7 @@ version: 0.1.0
 license: "Apache 2"
 url: "gh.com/foo/bar"
 `
+	readmeTemplate = `README goes here`
+
+	specTemplate = `kubernetes goes here`
 )
