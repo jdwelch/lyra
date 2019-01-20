@@ -12,11 +12,11 @@ msgstr "lyra <command>"
 
 #: cmd/lyra/cmd/root.go:32
 msgid "rootCmdShort"
-msgstr "Lyra - Provision and manage cloud native infrastructure"
+msgstr "Lyra - A workflow engine for cloud native infrastructure."
 
 #: cmd/lyra/cmd/root.go:33
 msgid "rootCmdLong"
-msgstr "Lyra - Provision and manage cloud native infrastructure. \n"
+msgstr "Lyra - A workflow engine for cloud native infrastructure. \n"
 "  Find more information at: https://github.com/lyraproj/lyra"
 # ↑ Spaces are significant! Should probably find a way to automate
 # the fiddly formatting instead. ¯\_(ツ)_/¯
