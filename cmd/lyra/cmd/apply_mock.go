@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	ui "github.com/lyraproj/lyra/cmd/lyra/ui"
+	"github.com/lyraproj/lyra/pkg/i18n"
 	"github.com/lyraproj/lyra/pkg/logger"
 	m "github.com/lyraproj/lyra/pkg/mock"
 	"github.com/mgutz/ansi"
@@ -23,9 +24,10 @@ var (
 // Yeah, I should just base this on the actual apply subcommand
 func NewApplyMockCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "apply [puppet manifest]",
-		Short:   "Provisions cloud resources from a manifest file",
-		Example: fmt.Sprintf("%s apply manifest.pp", os.Args[0]),
+		Use:     i18n.T("applyCmdUse"),
+		Short:   i18n.T("applyCmdShort"),
+		Long:    i18n.T("applyCmdLong"),
+		Example: i18n.T("applyCmdExample"),
 		Run:     runApplyMock,
 		Args:    cobra.ExactArgs(1),
 	}

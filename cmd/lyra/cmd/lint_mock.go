@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	t "github.com/lyraproj/lyra/pkg/strings"
+	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -12,15 +12,15 @@ func NewLintCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "lint",
-		Example:    "lint",
-		Short:      "lint",
-		Long:       "lint",
+		Example:    "lint my-workflow/",
+		Short:      "test workflow / wf package",
+		Long:       "test workflow / wf package",
 		Run:        runLint,
 		SuggestFor: []string{"check"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }

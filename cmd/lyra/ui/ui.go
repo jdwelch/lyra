@@ -90,15 +90,16 @@ func ValidationError(err error) {
 // HelpTemplate is helpful
 // Inspired by https://github.com/kubernetes/kompose/blob/master/cmd/convert.go
 // Remember ALL the whitespace is significant!
-// TODO: Externalise this whole thing
 var HelpTemplate = `Description:
   {{rpad .Long 10}}
 
-Usage:{{if .Runnable}}{{if .HasAvailableFlags}}
-  {{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if gt .Aliases 0}}
+Usage:{{if .Runnable}}
+{{if .HasAvailableFlags}}  {{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}
+{{if gt .Aliases 0}}
 
 Aliases:
-  {{.NameAndAliases}}{{end}}{{if .HasExample }}
+  {{.NameAndAliases}}
+{{end}}{{if .HasExample}}
 
 Examples:
 {{ .Example }}{{end}}{{ if .HasAvailableSubCommands}}
@@ -113,17 +114,23 @@ Global Flags:
 {{.InheritedFlags.FlagUsages | trimRightSpace}}{{end}}{{if .HasHelpSubCommands}}
 
 Additional help topics:{{range .Commands}}{{if .IsHelpCommand}}
-{{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{ if .HasAvailableSubCommands }}{{end}}
 `
 
-// UsageTemplate is similar to HelpTemplate, but sticks to brief usage.
+// UsageTemplate is similar to HelpTemplate, but sticks to brief usage and examples.
 // Remember ALL the whitespace is significant!
-// TODO: Externalise this whole thing
-var UsageTemplate = `Usage:{{if .Runnable}}{{if .HasAvailableFlags}}
-  {{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{ if .HasAvailableLocalFlags}}
+var UsageTemplate = `
+Usage:{{if .Runnable}}
+{{if .HasAvailableFlags}}  {{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{if gt .Aliases 0}}
 
-Flags:
-{{.LocalFlags.FlagUsages | trimRightSpace}}{{end}}
+Aliases:
+{{.NameAndAliases}}
+{{end}}{{if .HasExample}}
 
-See '{{.CommandPath}} --help' for more help and examples.
-`
+Examples:
+{{ .Example }}{{end}}{{ if .HasAvailableSubCommands}}
+
+Available Commands:{{range .Commands}}{{if .IsAvailableCommand}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{ if .HasAvailableLocalFlags}}
+
+See '{{.CommandPath}} --help' for help and examples.{{end}}`

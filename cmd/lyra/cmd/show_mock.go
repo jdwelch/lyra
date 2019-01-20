@@ -6,7 +6,6 @@ import (
 
 	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	m "github.com/lyraproj/lyra/pkg/mock"
-	t "github.com/lyraproj/lyra/pkg/strings"
 	"github.com/spf13/cobra"
 )
 
@@ -18,10 +17,10 @@ var (
 // NewShowCmd returns the show subcommand
 func NewShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     t.ShowCmdUsage,
-		Example: t.ShowCmdExample,
-		Short:   t.ShowCmdShortDesc,
-		Long:    t.ShowCmdLongDesc,
+		Use:     "show",
+		Example: "show",
+		Short:   "",
+		Long:    "",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires an argument")
@@ -32,8 +31,8 @@ func NewShowCmd() *cobra.Command {
 		SuggestFor: []string{"describe", "get", "list", "ls", "view"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 	cmd.Flags().BoolVar(&jsonOut, "json", false, "Show output in JSON")
 	cmd.Flags().BoolVar(&yamlOut, "yaml", false, "Show output in YAML (default)")
 

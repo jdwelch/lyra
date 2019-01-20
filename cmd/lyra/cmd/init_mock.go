@@ -7,8 +7,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 
-	t "github.com/lyraproj/lyra/pkg/strings"
-
+	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,9 +25,9 @@ func NewInitCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "init",
-		Example:    "init",
-		Short:      "init",
-		Long:       "init",
+		Example:    "init --kube-namespace default",
+		Short:      "Install Lyra server component",
+		Long:       "Install Lyra server component",
 		Run:        runInit,
 		SuggestFor: []string{"install"},
 	}
@@ -44,8 +43,8 @@ func NewInitCmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&kubenamespace, "kube-namespace", "n", "kube-system", "Kubernetes namespace for Cygnus")
 	cmd.PersistentFlags().StringVar(&kubecontext, "kube-context", "", "Name of the kubeconfig context to use")
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	viper.BindPFlag("cygnus-host", cmd.PersistentFlags().Lookup("cygnus-host"))
 	viper.BindPFlag("cygnus-connection-timeout", cmd.PersistentFlags().Lookup("cygnus-connection-timeout"))

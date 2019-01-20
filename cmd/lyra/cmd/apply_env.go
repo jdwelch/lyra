@@ -3,8 +3,8 @@ package cmd
 import (
 	"errors"
 
+	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	"github.com/lyraproj/lyra/pkg/logger"
-	t "github.com/lyraproj/lyra/pkg/strings"
 
 	"github.com/spf13/cobra"
 )
@@ -27,8 +27,8 @@ func NewApplyEnvCmd() *cobra.Command {
 		Hidden: true,
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }

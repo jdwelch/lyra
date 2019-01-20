@@ -12,7 +12,6 @@ import (
 	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	"github.com/lyraproj/lyra/pkg/logger"
 	m "github.com/lyraproj/lyra/pkg/mock"
-	t "github.com/lyraproj/lyra/pkg/strings"
 	"github.com/spf13/cobra"
 	survey "gopkg.in/AlecAivazis/survey.v1"
 )
@@ -30,16 +29,16 @@ type LyraPlugin struct {
 func NewCreateCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:        t.CreateCmdName,
-		Example:    t.CreateCmdExample,
-		Short:      t.CreateCmdShortDesc,
-		Long:       t.CreateCmdLongDesc,
+		Use:        "create",
+		Example:    "create",
+		Short:      "Create a new Lyra workflow package",
+		Long:       "Create a new Lyra workflow package",
 		Run:        runCreate,
 		SuggestFor: []string{"new"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }

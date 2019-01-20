@@ -19,8 +19,8 @@ func NewRegisterCmd() *cobra.Command {
 		SuggestFor: []string{"deploy"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }
@@ -42,8 +42,8 @@ func NewUnregisterCmd() *cobra.Command {
 		SuggestFor: []string{"undeploy"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }

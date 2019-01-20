@@ -6,7 +6,6 @@ import (
 
 	ui "github.com/lyraproj/lyra/cmd/lyra/ui"
 	m "github.com/lyraproj/lyra/pkg/mock"
-	t "github.com/lyraproj/lyra/pkg/strings"
 
 	"github.com/spf13/cobra"
 )
@@ -15,10 +14,10 @@ import (
 func NewDestroyCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:     t.DestroyCmdUsage,
-		Example: t.DestroyCmdExample,
-		Short:   t.DestroyCmdShortDesc,
-		Long:    t.DestroyCmdLongDesc,
+		Use:     "destroy",
+		Example: "destroy",
+		Short:   "Destroy infrastructure resources",
+		Long:    "Destroy infrastructure resources",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires an argument")
@@ -29,8 +28,8 @@ func NewDestroyCmd() *cobra.Command {
 		SuggestFor: []string{"delete", "remove"},
 	}
 
-	cmd.SetHelpTemplate(t.HelpTemplate)
-	cmd.SetUsageTemplate(t.UsageTemplate)
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
 
 	return cmd
 }
