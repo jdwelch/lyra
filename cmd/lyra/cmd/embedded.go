@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/lyraproj/lyra/cmd/goplugin-aws/aws"
 	"github.com/lyraproj/lyra/cmd/goplugin-example/example"
 	"github.com/lyraproj/lyra/cmd/goplugin-identity/identity"
 	"github.com/lyraproj/lyra/pkg/logger"
 	"github.com/lyraproj/puppet-workflow/puppet"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // EmbeddedPluginCmd runs embedded plugins

@@ -38,4 +38,3 @@ func runApplyCmd(cmd *cobra.Command, args []string) {
 	workflowName := args[0]
 	applicator.ApplyWorkflow(workflowName, hieraDataFilename)
 }
-
