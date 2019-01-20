@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	"github.com/lyraproj/lyra/pkg/i18n"
 	"github.com/lyraproj/lyra/pkg/logger"
 	"github.com/lyraproj/lyra/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 const (
@@ -17,14 +21,19 @@ const (
 )
 
 var (
-	assumeYes bool
-	chaos     bool
-	debug     bool
-	noop      bool
-	jsonlogs  bool
-	loglevel  string
-	outline   bool
-	verbose   bool
+	assumeYes         bool
+	chaos             bool
+	connectiontimeout int
+	debug             bool
+	host              string
+	jsonlogs          bool
+	kubeconfig        string
+	kubecontext       string
+	kubenamespace     string
+	loglevel          string
+	noop              bool
+	outline           bool
+	verbose           bool
 )
 
 // NewRootCmd returns the root command
@@ -52,6 +61,20 @@ func NewRootCmd() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&noop, "dry-run", false, "Dry-run  mode")
 	cmd.PersistentFlags().BoolVarP(&assumeYes, "assume-yes", "y", false, "Bypass any y/n prompts, answering yes")
 
+	// Flags for k8s
+	if home := homedir.HomeDir(); home != "" { // Not sure why I have to do this, but if I don't kube client complains later.
+		cmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "absolute path to the kubeconfig file to use")
+	} else {
+		cmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file to use")
+	}
+	cmd.PersistentFlags().IntVarP(&connectiontimeout, "cygnus-connection-timeout", "t", 300, "the duration (in seconds) Lyra will wait to establish a connection to Cygnus")
+	cmd.PersistentFlags().StringVar(&host, "cygnus-host", getKubeHost(kubeconfig), "Address of Cygnus (probably a Kubernetes master)")
+	cmd.PersistentFlags().StringVarP(&kubenamespace, "kube-namespace", "n", "kube-system", "Kubernetes namespace for Cygnus")
+	cmd.PersistentFlags().StringVar(&kubecontext, "kube-context", "", "Name of the kubeconfig context to use")
+
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
+
 	// Flags for design purposes
 	cmd.PersistentFlags().BoolVarP(&outline, "outline", "o", false, "")
 	cmd.PersistentFlags().MarkHidden("outline")
@@ -63,6 +86,11 @@ func NewRootCmd() *cobra.Command {
 	viper.BindPFlag("jsonlogs", cmd.PersistentFlags().Lookup("jsonlogs"))
 	viper.BindPFlag("loglevel", cmd.PersistentFlags().Lookup("loglevel"))
 	viper.BindPFlag("assume-yes", cmd.PersistentFlags().Lookup("assume-yes"))
+	viper.BindPFlag("cygnus-host", cmd.PersistentFlags().Lookup("cygnus-host"))
+	viper.BindPFlag("cygnus-connection-timeout", cmd.PersistentFlags().Lookup("cygnus-connection-timeout"))
+	viper.BindPFlag("kubeconfig", cmd.PersistentFlags().Lookup("kubeconfig"))
+	viper.BindPFlag("kube-context", cmd.PersistentFlags().Lookup("kube-context"))
+	viper.BindPFlag("kube-namespace", cmd.PersistentFlags().Lookup("kube-namespace"))
 
 	// Commands
 	cmd.AddCommand(NewApplyEnvCmd())
@@ -134,4 +162,16 @@ func initializeConfig() {
 		log.Error("unable to marshal config to JSON: %v", err)
 	}
 	log.Debug("current config values", string(f))
+}
+
+func getKubeHost(kubeconfig string) string {
+	// https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+	if config.Host != "" {
+		return config.Host
+	}
+	return ""
 }
