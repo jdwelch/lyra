@@ -29,6 +29,7 @@ func NewControllerCmd() *cobra.Command {
 		Example: i18n.T("controllerCmdExample"),
 		Run:     runControllerCmd,
 		Args:    cobra.NoArgs,
+		Hidden:  true,
 	}
 
 	cmd.Flags().StringVarP(&namespace, "namespace", "n", "default", i18n.T("controllerNamespace"))
