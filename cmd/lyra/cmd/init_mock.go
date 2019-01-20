@@ -74,3 +74,25 @@ func getKubeHost(kubeconfig string) string {
 	}
 	return ""
 }
+
+// NewUninstallCmd removes things from cluster
+func NewUninstallCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "uninstall",
+		Example: "uninstall",
+		Short:   "Remove server component",
+		Long:    "Remove server component",
+		Run:     runUninstallCmd,
+	}
+
+	cmd.SetHelpTemplate(ui.HelpTemplate)
+	cmd.SetUsageTemplate(ui.UsageTemplate)
+
+	return cmd
+}
+
+func runUninstallCmd(cmd *cobra.Command, args []string) {
+	fmt.Println("info", "")
+	fmt.Println("info", "Status command")
+	fmt.Println("info", "")
+}
