@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/lyraproj/lyra/cmd/lyra/ui"
 	m "github.com/lyraproj/lyra/pkg/mock"
@@ -19,8 +18,8 @@ func NewShowCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "show",
 		Example: "show",
-		Short:   "",
-		Long:    "",
+		Short:   "Enumerate instances of workflows",
+		Long:    "Enumerate instances of workflows",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires an argument")
@@ -47,51 +46,4 @@ func showResources(args []string) {
 	m.Outline(m.Process, "Try and find the context '"+args[0]+"'")
 	ui.DescribeStep("Looking for resources in context '" + args[0] + "'…")
 	ui.ProgressBar("Querying running state", 1500, false)
-	if jsonOut {
-		fmt.Println(jsonOutput)
-	} else {
-		fmt.Println(yamlOutput)
-	}
 }
-
-const (
-	yamlOutput = `meta:
-  cloudcontext:
-    key1: val1
-    key2: val2
-resources:
-  namespace::type1:
-    'title1':
-      key1: value1
-      key2: value2
-  namespace::type2:
-    'title2':
-      key1: value1
-      key2: value2
-      key3: value3
-      key4: value4`
-
-	jsonOutput = `{
-  "meta": {
-    "cloudcontext": {
-      "key1": "val1",
-      "key2": "val2"
-    }
-  },
-  "resources": {
-    "namespace::type1": {
-      "title1": {
-      "key1": "value1"
-      }
-    },
-    "namespace::type2": {
-      "title2": {
-        "key1": "value1",
-        "key2": "value2",
-        "key3": "value3",
-        "key4": "value4"
-      }
-    }
-  }
-}`
-)

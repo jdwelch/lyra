@@ -13,8 +13,8 @@ func NewRegisterCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "register",
 		Example:    "reg",
-		Short:      "reg",
-		Long:       "reg",
+		Short:      "Make workflow available in a cluster",
+		Long:       "Make workflow available in a cluster",
 		Run:        runRegister,
 		SuggestFor: []string{"deploy"},
 	}
@@ -36,8 +36,8 @@ func NewUnregisterCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "unregister",
 		Example:    "unreg",
-		Short:      "unreg",
-		Long:       "unreg",
+		Short:      "Remove workflow from a cluster",
+		Long:       "Remove workflow from a cluster",
 		Run:        runRegister,
 		SuggestFor: []string{"undeploy"},
 	}

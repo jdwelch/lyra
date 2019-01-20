@@ -16,8 +16,8 @@ func NewDestroyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "destroy",
 		Example: "destroy",
-		Short:   "Destroy infrastructure resources",
-		Long:    "Destroy infrastructure resources",
+		Short:   "Delete instance of workflow",
+		Long:    "Delete instance of workflow",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("requires an argument")

@@ -13,8 +13,8 @@ func NewLintCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "lint",
 		Example:    "lint my-workflow/",
-		Short:      "test workflow / wf package",
-		Long:       "test workflow / wf package",
+		Short:      "Test workflow / wf package",
+		Long:       "Test workflow / wf package",
 		Run:        runLint,
 		SuggestFor: []string{"check"},
 	}
