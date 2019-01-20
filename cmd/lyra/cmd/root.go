@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
 
 	"github.com/lyraproj/lyra/pkg/i18n"
 	"github.com/lyraproj/lyra/pkg/logger"
@@ -22,9 +20,9 @@ var (
 	assumeYes bool
 	chaos     bool
 	debug     bool
+	noop      bool
 	jsonlogs  bool
 	loglevel  string
-	noop      bool
 	outline   bool
 	verbose   bool
 )
@@ -44,41 +42,41 @@ func NewRootCmd() *cobra.Command {
 		Version:          fmt.Sprintf("%v", version.Get()),
 	}
 
-	cmd.PersistentFlags().BoolVarP(&assumeYes, "assume-yes", "y", false, "Bypass any y/n prompts, answering yes")
-	cmd.PersistentFlags().BoolVarP(&chaos, "chaos", "c", false, "")
+	// Flags for controlling output
 	cmd.PersistentFlags().BoolVar(&debug, "debug", false, i18n.T("rootFlagDebug"))
 	cmd.PersistentFlags().BoolVar(&jsonlogs, "jsonlogs", false, "Output logs in JSON format")
-	cmd.PersistentFlags().StringVar(&loglevel, "loglevel", "", i18n.T("rootFlagLoglevel"))
-	cmd.PersistentFlags().BoolVar(&noop, "dry-run", false, "Dry-run, no-op mode")
-	cmd.PersistentFlags().BoolVarP(&outline, "outline", "o", false, "")
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show verbose output")
-	// Hide internal/dev flags from users
+	cmd.PersistentFlags().StringVar(&loglevel, "loglevel", "", i18n.T("rootFlagLoglevel"))
+
+	// Flags for controlling behaviour
+	cmd.PersistentFlags().BoolVar(&noop, "dry-run", false, "Dry-run  mode")
+	cmd.PersistentFlags().BoolVarP(&assumeYes, "assume-yes", "y", false, "Bypass any y/n prompts, answering yes")
+
+	// Flags for design purposes
+	cmd.PersistentFlags().BoolVarP(&outline, "outline", "o", false, "")
 	cmd.PersistentFlags().MarkHidden("outline")
+	cmd.PersistentFlags().BoolVarP(&chaos, "chaos", "c", false, "")
 	cmd.PersistentFlags().MarkHidden("chaos")
 
-	// Some (all? most?) flags should be accessable in config file
-	// TODO: Would be nice to put CLI stuff in something other than the top level
+	// Most flags should be accessable in config file
+	viper.BindPFlag("dry-run", cmd.PersistentFlags().Lookup("dry-run"))
 	viper.BindPFlag("jsonlogs", cmd.PersistentFlags().Lookup("jsonlogs"))
 	viper.BindPFlag("loglevel", cmd.PersistentFlags().Lookup("loglevel"))
 	viper.BindPFlag("assume-yes", cmd.PersistentFlags().Lookup("assume-yes"))
 
-	// real
-	cmd.AddCommand(NewVersionCmd())
-	// cmd.AddCommand(NewApplyCmd())
-	cmd.AddCommand(NewControllerCmd())
-	cmd.AddCommand(NewValidateCmd())
-	cmd.AddCommand(EmbeddedPluginCmd())
-
-	// mock
-	cmd.AddCommand(NewApplyMockCmd())
+	// Commands
 	cmd.AddCommand(NewApplyEnvCmd())
+	cmd.AddCommand(NewApplyMockCmd())
+	cmd.AddCommand(NewControllerCmd())
+	cmd.AddCommand(NewCreateCmd())
 	cmd.AddCommand(NewDestroyCmd())
 	cmd.AddCommand(NewExperimentalCmd())
 	cmd.AddCommand(NewInitCmd())
-	cmd.AddCommand(NewShowCmd())
-	cmd.AddCommand(NewCreateCmd())
-	cmd.AddCommand(NewRegisterCmd())
 	cmd.AddCommand(NewLintCmd())
+	cmd.AddCommand(NewRegisterCmd())
+	cmd.AddCommand(NewShowCmd())
+	cmd.AddCommand(NewValidateCmd())
+	cmd.AddCommand(NewVersionCmd())
 
 	return cmd
 }
@@ -104,54 +102,27 @@ func initializeConfig() {
 	viper.AddConfigPath("/etc/lyra/")  // path to look for the config file in
 	viper.AddConfigPath("$HOME/.lyra") // call multiple times to add many search paths
 	viper.AddConfigPath(".")           // optionally look for config in the working directory
+	viper.SetConfigType("yaml")
 
-	// TODO: Actually handle this in a meaningful way
-	user, err := user.Current()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	err = viper.ReadInConfig() // Find and read the config file
-
-	// FIXME: This feels abhorrent, but how else to ensure Viper
-	// config affects the logger? Not sure how to set jsonlogs
-	// after initialisation.
 	spec := logger.Spec{
 		Name:   "lyra",
 		Level:  viper.GetString("loglevel"),
 		JSON:   viper.GetBool("jsonlogs"),
 		Output: os.Stderr,
 	}
-
 	logger.Initialise(spec)
-
 	log := logger.Get()
 
-	if err != nil {
-		// Log the error but keep going
-		log.Debug(err.Error())
+	// Read config from disk
+	// FIXME: WTFF
+	// err := viper.ReadInConfig()
+	// if err != nil {
+	// 	log.Debug("success in reading config from", viper.ConfigFileUsed())
+	// } else {
+	// 	log.Error(err.Error())
+	// }
 
-		// If no config file, make one. First, touch an empty file.
-		// WriteConfig() can't do this itself because ¯\_(ツ)_/¯
-		cfgfile := filepath.Join(user.HomeDir, ".lyra/config.yaml")  // FIXME: Windows?
-		_, err = os.OpenFile(cfgfile, os.O_RDONLY|os.O_CREATE, 0666) // FIXME: Windows?
-		if err != nil {
-			log.Error(err.Error())
-		} else {
-			log.Debug("touched new empty config file", cfgfile)
-		}
-
-		// Write values, bound to flags via init() above, to new file.
-		err = viper.WriteConfig()
-		if err != nil {
-			log.Error(err.Error())
-		} else {
-			log.Debug("wrote values to config file", cfgfile)
-		}
-	} else {
-		log.Debug("success in reading config from", viper.ConfigFileUsed())
-	}
-	// Log all settings for debug posterity
+	// Log current settings for debug posterity
 	c := viper.AllSettings()
 	f, err := json.Marshal(c)
 	if err != nil {
