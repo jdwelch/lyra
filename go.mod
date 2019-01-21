@@ -3,7 +3,7 @@ module github.com/lyraproj/lyra
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Netflix/go-expect v0.0.0-20180928190340-9d1f4485533b // indirect
-	github.com/aws/aws-sdk-go v1.16.20
+	github.com/aws/aws-sdk-go v1.16.22
 	github.com/boltdb/bolt v1.3.1
 	github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7
 	github.com/cespare/trie v0.0.0-20150610204604-3fe1a95cbba9 // indirect
@@ -21,17 +21,14 @@ require (
 	github.com/lyraproj/hiera v0.0.0-20190114153236-e6de2935d4de
 	github.com/lyraproj/issue v0.0.0-20181208172701-8d203563a8dc
 	github.com/lyraproj/lyra-operator v0.0.0-20190114162440-0e4a872146a0
-	github.com/lyraproj/puppet-evaluator v0.0.0-20190116142411-2aee65d8f315
-	github.com/lyraproj/puppet-workflow v0.0.0-20190115145541-28d82a270abb
-	github.com/lyraproj/servicesdk v0.0.0-20190117155437-eac8f20ea1b5
-	github.com/lyraproj/wfe v0.0.0-20190117155636-f45dea6bcefd
+	github.com/lyraproj/puppet-evaluator v0.0.0-20190119120541-966996aacfc1
+	github.com/lyraproj/puppet-workflow v0.0.0-20190119121939-926862d72603
+	github.com/lyraproj/semver v0.0.0-20181213164306-02ecea2cd6a2
+	github.com/lyraproj/servicesdk v0.0.0-20190119121211-1908bd44546f
+	github.com/lyraproj/wfe v0.0.0-20190119121258-c6d27ce13741
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
-	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
-	github.com/pborman/uuid v1.2.0 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
-	github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
@@ -45,9 +42,6 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/src-d/enry.v1 v1.6.7
 	gopkg.in/toqueteos/substring.v1 v1.0.2 // indirect
-	k8s.io/apiextensions-apiserver v0.0.0-20190116054503-cf30b7cf64c2 // indirect
-	k8s.io/apimachinery v0.0.0-20190111195121-fa6ddc151d63 // indirect
 	k8s.io/client-go v10.0.0+incompatible
-	k8s.io/kube-openapi v0.0.0-20190115222348-ced9eb3070a5 // indirect
 	sigs.k8s.io/controller-runtime v0.1.9
 )
