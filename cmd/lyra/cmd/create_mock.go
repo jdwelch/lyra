@@ -287,6 +287,7 @@ image_id: 'ami-b63ae0ce'
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 ---
 apiVersion: v1alpha1
+appVersion: "0.1"
 name: {{.Name}}
 author: {{.Author}}
 description: "A lovely Lyra workflow."
