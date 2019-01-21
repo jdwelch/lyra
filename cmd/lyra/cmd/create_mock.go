@@ -147,7 +147,7 @@ func createManifestScaffold(wf LyraPlugin) {
 	generateFileFromTemplate(wf, datafile, dataTemplate)
 
 	// Generate sample k8s object spec
-	objectspec := pkgdirectory + "/" + "object-spec.yaml"
+	objectspec := pkgdirectory + "/" + "deploy.yaml"
 	generateFileFromTemplate(wf, objectspec, specTemplate)
 
 	// Generate readme
@@ -228,29 +228,50 @@ const (
 	directoryTree = `{{.Name}}
 ├── README.md
 ├── metadata.yaml
-├── object-spec.yaml
+├── deploy.yaml
 ├── values.yaml
 └── workflows
     └──{{.Name}}-default.{{.LanguageExt}}
 `
 
-	puppetWfTemplate = `# This is an auto-generated scaffold 
+	puppetWfTemplate = `# This is an auto-generated scaffold
 # of a Lyra workflow. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
-# TODO: WORKFLOW (in Puppet) HERE!
+
+workflow sample2 {
+  typespace => 'example',
+  input => (
+    String $foo = lookup('foo', undef, undef, "foo"),
+    String $bar = lookup('bar', undef, undef, "bar"),
+    String $baz = lookup('baz', undef, undef, "baz")
+  ),
+  output => (
+    String $foo,
+    String $bar,
+    String $baz
+  )
+} {
+  resource person {
+    output => ($name)
+  }{
+    age => 28,
+    name => 'Bob',
+    human => false,
+  }
+}
 `
 
 	yamlWfTemplate = `# This is an auto-generated scaffold
-# of a Lyra workflow. For detailed documentation, 
+# of a Lyra workflow. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
----
+# ---
 # TODO: WORKFLOW (in YAML) HERE!
 `
 
-	typescriptWfTemplate = `# This is an auto-generated scaffold 
-# of a Lyra workflow. For detailed documentation, 
-# see https://github.com/lyraproj/lyra/docs/getting-started.md
-TODO: WORKFLOW (in TypeScript) HERE!
+	typescriptWfTemplate = `// This is an auto-generated scaffold
+// of a Lyra workflow. For detailed documentation,
+// see https://github.com/lyraproj/lyra/docs/getting-started.md
+// TODO: WORKFLOW (in TypeScript) HERE!
 `
 
 	dataTemplate = `# This is an auto-genereated scaffold
@@ -265,15 +286,31 @@ image_id: 'ami-b63ae0ce'
 # of a Lyra package metadata file. For detailed documentation,
 # see https://github.com/lyraproj/lyra/docs/getting-started.md
 ---
-apiVersion: v1
+apiVersion: v1alpha1
 name: {{.Name}}
 author: {{.Author}}
 description: "A lovely Lyra workflow."
-version: 0.1.0
+version: {{.Version}}
 license: "Apache 2"
 url: "gh.com/foo/bar"
 `
-	readmeTemplate = `README goes here`
+	readmeTemplate = `# README for {{.Name}} goes here!`
 
-	specTemplate = `kubernetes goes here`
+	specTemplate = `# This is an auto-genereated scaffold
+# of a Lyra package deployment file. For detailed documentation,
+# see https://github.com/lyraproj/lyra/docs/getting-started.md
+---
+apiVersion: lyraproj.io/v1alpha1
+kind: Workflow
+metadata:
+  app.kubernetes.io/name: {{.Name}}-wf
+  labels:
+    lyraproj.io/workflowVersion: {{.Version}}
+spec:
+  lyraproj.io/workflowName: "{{.Name}}-wf"
+	lyraproj.io/data:
+	  aws_region: 'us-west-2'
+    image_id: 'ami-b63ae0ce'
+    refreshTime: 60
+`
 )
