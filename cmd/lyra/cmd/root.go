@@ -69,7 +69,7 @@ func NewRootCmd() *cobra.Command {
 	}
 	cmd.PersistentFlags().IntVarP(&connectiontimeout, "cygnus-connection-timeout", "t", 300, "the duration (in seconds) Lyra will wait to establish a connection to Cygnus")
 	cmd.PersistentFlags().StringVar(&host, "cygnus-host", getKubeHost(kubeconfig), "Address of Cygnus (probably a Kubernetes master)")
-	cmd.PersistentFlags().StringVarP(&kubenamespace, "kube-namespace", "n", "kube-system", "Kubernetes namespace for Cygnus")
+	cmd.PersistentFlags().StringVarP(&kubenamespace, "kube-namespace", "", "kube-system", "Kubernetes namespace for Cygnus")
 	cmd.PersistentFlags().StringVar(&kubecontext, "kube-context", "", "Name of the kubeconfig context to use")
 
 	cmd.SetHelpTemplate(ui.HelpTemplate)
