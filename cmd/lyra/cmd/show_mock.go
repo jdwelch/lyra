@@ -27,7 +27,7 @@ func NewShowCmd() *cobra.Command {
 			return nil
 		},
 		Run:        runShow,
-		SuggestFor: []string{"describe", "get", "list", "ls", "view"},
+		SuggestFor: []string{"list", "ls", "view"},
 	}
 
 	cmd.SetHelpTemplate(ui.HelpTemplate)

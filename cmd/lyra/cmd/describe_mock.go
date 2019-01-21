@@ -11,11 +11,12 @@ import (
 func NewDescribeCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:     "describe",
-		Example: "describe",
-		Short:   "Enumerate details of an instance of a workflow",
-		Long:    "Enumerate details of an instance of a workflow",
-		Run:     runDescribe,
+		Use:        "describe",
+		Example:    "describe",
+		Short:      "Enumerate details of an instance of a workflow",
+		Long:       "Enumerate details of an instance of a workflow",
+		Run:        runDescribe,
+		SuggestFor: []string{"get"},
 	}
 
 	cmd.SetHelpTemplate(ui.HelpTemplate)
