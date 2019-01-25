@@ -99,6 +99,21 @@ type Aws = TypeSet[{
                 }
               }
             },
+            IamRole => {
+              attributes => {
+                'description' => {
+                  'type' => Optional[String],
+                  'value' => undef
+                },
+                'role_name' => String,
+                'assume_role_policy_document' => String,
+                'path' => {
+                  'type' => Optional[String],
+                  'value' => undef
+                },
+                'tags' => Hash[String, String]
+              }
+            },
             Instance => {
               attributes => {
                 'additional_info' => {
@@ -294,12 +309,12 @@ type Aws = TypeSet[{
             InstanceHandler => {
               functions => {
                 'create' => Callable[
-                  [Instance],
-                  Tuple[Instance, String]],
+                  [Optional[Instance]],
+                  Tuple[Optional[Instance], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  Instance]
+                  Optional[Instance]]
               }
             },
             InstanceIpv6Address => {
@@ -350,12 +365,12 @@ type Aws = TypeSet[{
             InternetGatewayHandler => {
               functions => {
                 'create' => Callable[
-                  [InternetGateway],
-                  Tuple[InternetGateway, String]],
+                  [Optional[InternetGateway]],
+                  Tuple[Optional[InternetGateway], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  InternetGateway]
+                  Optional[InternetGateway]]
               }
             },
             IpPermission => {
@@ -427,12 +442,12 @@ type Aws = TypeSet[{
             KeyPairHandler => {
               functions => {
                 'create' => Callable[
-                  [KeyPair],
-                  Tuple[KeyPair, String]],
+                  [Optional[KeyPair]],
+                  Tuple[Optional[KeyPair], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  KeyPair]
+                  Optional[KeyPair]]
               }
             },
             LaunchTemplateSpecification => {
@@ -470,6 +485,1092 @@ type Aws = TypeSet[{
               name => 'Aws::Native',
               version => '0.1.0',
               types => {
+                CapacityReservationSpecificationResponse => {
+                  attributes => {
+                    'capacity_reservation_preference' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'capacity_reservation_target' => {
+                      'type' => Optional[CapacityReservationTargetResponse],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                CapacityReservationTargetResponse => {
+                  attributes => {
+                    'capacity_reservation_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                CpuOptions => {
+                  attributes => {
+                    'core_count' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'threads_per_core' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                EbsInstanceBlockDevice => {
+                  attributes => {
+                    'attach_time' => {
+                      'type' => Optional[Timestamp],
+                      'value' => undef
+                    },
+                    'delete_on_termination' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'status' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'volume_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                ElasticGpuAssociation => {
+                  attributes => {
+                    'elastic_gpu_association_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_gpu_association_state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_gpu_association_time' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_gpu_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                ElasticInferenceAcceleratorAssociation => {
+                  attributes => {
+                    'elastic_inference_accelerator_arn' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_inference_accelerator_association_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_inference_accelerator_association_state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'elastic_inference_accelerator_association_time' => {
+                      'type' => Optional[Timestamp],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                GroupIdentifier => {
+                  attributes => {
+                    'group_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                HibernationOptions => {
+                  attributes => {
+                    'configured' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                IamInstanceProfile => {
+                  attributes => {
+                    'arn' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Instance => {
+                  attributes => {
+                    'ami_launch_index' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'architecture' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'block_device_mappings' => Array[Optional[InstanceBlockDeviceMapping]],
+                    'capacity_reservation_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'capacity_reservation_specification' => {
+                      'type' => Optional[CapacityReservationSpecificationResponse],
+                      'value' => undef
+                    },
+                    'client_token' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'cpu_options' => {
+                      'type' => Optional[CpuOptions],
+                      'value' => undef
+                    },
+                    'ebs_optimized' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'elastic_gpu_associations' => Array[Optional[ElasticGpuAssociation]],
+                    'elastic_inference_accelerator_associations' => Array[Optional[ElasticInferenceAcceleratorAssociation]],
+                    'ena_support' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'hibernation_options' => {
+                      'type' => Optional[HibernationOptions],
+                      'value' => undef
+                    },
+                    'hypervisor' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'iam_instance_profile' => {
+                      'type' => Optional[IamInstanceProfile],
+                      'value' => undef
+                    },
+                    'image_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'instance_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'instance_lifecycle' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'instance_type' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'kernel_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'key_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'launch_time' => {
+                      'type' => Optional[Timestamp],
+                      'value' => undef
+                    },
+                    'licenses' => Array[Optional[LicenseConfiguration]],
+                    'monitoring' => {
+                      'type' => Optional[Monitoring],
+                      'value' => undef
+                    },
+                    'network_interfaces' => Array[Optional[InstanceNetworkInterface]],
+                    'placement' => {
+                      'type' => Optional[Placement],
+                      'value' => undef
+                    },
+                    'platform' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_dns_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_ip_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'product_codes' => Array[Optional[ProductCode]],
+                    'public_dns_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'public_ip_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ramdisk_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'root_device_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'root_device_type' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'security_groups' => Array[Optional[GroupIdentifier]],
+                    'source_dest_check' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'spot_instance_request_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'sriov_net_support' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'state' => {
+                      'type' => Optional[InstanceState],
+                      'value' => undef
+                    },
+                    'state_reason' => {
+                      'type' => Optional[StateReason],
+                      'value' => undef
+                    },
+                    'state_transition_reason' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'subnet_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'tags' => Array[Optional[Tag]],
+                    'virtualization_type' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceBlockDeviceMapping => {
+                  attributes => {
+                    'device_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ebs' => {
+                      'type' => Optional[EbsInstanceBlockDevice],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceIpv6Address => {
+                  attributes => {
+                    'ipv6_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceNetworkInterface => {
+                  attributes => {
+                    'association' => {
+                      'type' => Optional[InstanceNetworkInterfaceAssociation],
+                      'value' => undef
+                    },
+                    'attachment' => {
+                      'type' => Optional[InstanceNetworkInterfaceAttachment],
+                      'value' => undef
+                    },
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'groups' => Array[Optional[GroupIdentifier]],
+                    'ipv6_addresses' => Array[Optional[InstanceIpv6Address]],
+                    'mac_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'network_interface_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_dns_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_ip_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_ip_addresses' => Array[Optional[InstancePrivateIpAddress]],
+                    'source_dest_check' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'status' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'subnet_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceNetworkInterfaceAssociation => {
+                  attributes => {
+                    'ip_owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'public_dns_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'public_ip' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceNetworkInterfaceAttachment => {
+                  attributes => {
+                    'attach_time' => {
+                      'type' => Optional[Timestamp],
+                      'value' => undef
+                    },
+                    'attachment_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'delete_on_termination' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'device_index' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'status' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstancePrivateIpAddress => {
+                  attributes => {
+                    'association' => {
+                      'type' => Optional[InstanceNetworkInterfaceAssociation],
+                      'value' => undef
+                    },
+                    'primary' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'private_dns_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'private_ip_address' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InstanceState => {
+                  attributes => {
+                    'code' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InternetGateway => {
+                  attributes => {
+                    'attachments' => Array[Optional[InternetGatewayAttachment]],
+                    'internet_gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'tags' => Array[Optional[Tag]]
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                InternetGatewayAttachment => {
+                  attributes => {
+                    'state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                IpPermission => {
+                  attributes => {
+                    'from_port' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'ip_protocol' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ip_ranges' => Array[Optional[IpRange]],
+                    'ipv6_ranges' => Array[Optional[Ipv6Range]],
+                    'prefix_list_ids' => Array[Optional[PrefixListId]],
+                    'to_port' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'user_id_group_pairs' => Array[Optional[UserIdGroupPair]]
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                IpRange => {
+                  attributes => {
+                    'cidr_ip' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Ipv6Range => {
+                  attributes => {
+                    'cidr_ipv6' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                LicenseConfiguration => {
+                  attributes => {
+                    'license_configuration_arn' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Monitoring => {
+                  attributes => {
+                    'state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Placement => {
+                  attributes => {
+                    'affinity' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'availability_zone' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'host_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'partition_number' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'spread_domain' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'tenancy' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                PrefixListId => {
+                  attributes => {
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'prefix_list_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                ProductCode => {
+                  attributes => {
+                    'product_code_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'product_code_type' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                PropagatingVgw => {
+                  attributes => {
+                    'gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Route => {
+                  attributes => {
+                    'destination_cidr_block' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'destination_ipv6_cidr_block' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'destination_prefix_list_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'egress_only_internet_gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'instance_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'instance_owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'nat_gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'network_interface_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'origin' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'transit_gateway_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_peering_connection_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                RouteTable => {
+                  attributes => {
+                    'associations' => Array[Optional[RouteTableAssociation]],
+                    'owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'propagating_vgws' => Array[Optional[PropagatingVgw]],
+                    'route_table_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'routes' => Array[Optional[Route]],
+                    'tags' => Array[Optional[Tag]],
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                RouteTableAssociation => {
+                  attributes => {
+                    'main' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'route_table_association_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'route_table_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'subnet_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                SecurityGroup => {
+                  attributes => {
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ip_permissions' => Array[Optional[IpPermission]],
+                    'ip_permissions_egress' => Array[Optional[IpPermission]],
+                    'owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'tags' => Array[Optional[Tag]],
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                StateReason => {
+                  attributes => {
+                    'code' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'message' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                Subnet => {
+                  attributes => {
+                    'assign_ipv6_address_on_creation' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'availability_zone' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'availability_zone_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'available_ip_address_count' => {
+                      'type' => Optional[Integer],
+                      'value' => undef
+                    },
+                    'cidr_block' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'default_for_az' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'ipv6_cidr_block_association_set' => Array[Optional[SubnetIpv6CidrBlockAssociation]],
+                    'map_public_ip_on_launch' => {
+                      'type' => Optional[Boolean],
+                      'value' => undef
+                    },
+                    'owner_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'subnet_arn' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'subnet_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'tags' => Array[Optional[Tag]],
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                SubnetCidrBlockState => {
+                  attributes => {
+                    'state' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'status_message' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
+                SubnetIpv6CidrBlockAssociation => {
+                  attributes => {
+                    'association_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ipv6_cidr_block' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'ipv6_cidr_block_state' => {
+                      'type' => Optional[SubnetCidrBlockState],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
                 Tag => {
                   attributes => {
                     'key' => {
@@ -490,13 +1591,53 @@ type Aws = TypeSet[{
                       String]
                   }
                 },
+                UserIdGroupPair => {
+                  attributes => {
+                    'description' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'group_name' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'peering_status' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'user_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    },
+                    'vpc_peering_connection_id' => {
+                      'type' => Optional[String],
+                      'value' => undef
+                    }
+                  },
+                  functions => {
+                    'go_string' => Callable[
+                      [0, 0],
+                      String],
+                    'string' => Callable[
+                      [0, 0],
+                      String]
+                  }
+                },
                 Vpc => {
                   attributes => {
                     'cidr_block' => {
                       'type' => Optional[String],
                       'value' => undef
                     },
-                    'cidr_block_association_set' => Array[Optional],
+                    'cidr_block_association_set' => Array[Optional[VpcCidrBlockAssociation]],
                     'dhcp_options_id' => {
                       'type' => Optional[String],
                       'value' => undef
@@ -505,7 +1646,7 @@ type Aws = TypeSet[{
                       'type' => Optional[String],
                       'value' => undef
                     },
-                    'ipv6_cidr_block_association_set' => Array[Optional],
+                    'ipv6_cidr_block_association_set' => Array[Optional[VpcIpv6CidrBlockAssociation]],
                     'is_default' => {
                       'type' => Optional[Boolean],
                       'value' => undef
@@ -518,7 +1659,7 @@ type Aws = TypeSet[{
                       'type' => Optional[String],
                       'value' => undef
                     },
-                    'tags' => Array[Optional],
+                    'tags' => Array[Optional[Tag]],
                     'vpc_id' => {
                       'type' => Optional[String],
                       'value' => undef
@@ -543,7 +1684,10 @@ type Aws = TypeSet[{
                       'type' => Optional[String],
                       'value' => undef
                     },
-                    'cidr_block_state' => VpcCidrBlockState
+                    'cidr_block_state' => {
+                      'type' => Optional[VpcCidrBlockState],
+                      'value' => undef
+                    }
                   },
                   functions => {
                     'go_string' => Callable[
@@ -584,7 +1728,10 @@ type Aws = TypeSet[{
                       'type' => Optional[String],
                       'value' => undef
                     },
-                    'ipv6_cidr_block_state' => VpcCidrBlockState
+                    'ipv6_cidr_block_state' => {
+                      'type' => Optional[VpcCidrBlockState],
+                      'value' => undef
+                    }
                   },
                   functions => {
                     'go_string' => Callable[
@@ -597,15 +1744,70 @@ type Aws = TypeSet[{
                 }
               }
             }],
-            NativeVpcHandler => {
+            NativeInstanceHandler => {
               functions => {
                 'create' => Callable[
-                  [Native::Vpc],
-                  Tuple[Native::Vpc, String]],
+                  [Optional[Native::Instance]],
+                  Tuple[Optional[Native::Instance], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  Native::Vpc]
+                  Optional[Native::Instance]]
+              }
+            },
+            NativeInternetGatewayHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[Native::InternetGateway]],
+                  Tuple[Optional[Native::InternetGateway], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[Native::InternetGateway]]
+              }
+            },
+            NativeRouteTableHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[Native::RouteTable]],
+                  Tuple[Optional[Native::RouteTable], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[Native::RouteTable]]
+              }
+            },
+            NativeSecurityGroupHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[Native::SecurityGroup]],
+                  Tuple[Optional[Native::SecurityGroup], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[Native::SecurityGroup]]
+              }
+            },
+            NativeSubnetHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[Native::Subnet]],
+                  Tuple[Optional[Native::Subnet], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[Native::Subnet]]
+              }
+            },
+            NativeVpcHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[Native::Vpc]],
+                  Tuple[Optional[Native::Vpc], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[Native::Vpc]]
               }
             },
             Placement => {
@@ -663,6 +1865,17 @@ type Aws = TypeSet[{
             PropagatingVgw => {
               attributes => {
                 'gateway_id' => String
+              }
+            },
+            RoleHandler => {
+              functions => {
+                'create' => Callable[
+                  [Optional[IamRole]],
+                  Tuple[Optional[IamRole], String]],
+                'delete' => Callable[String],
+                'read' => Callable[
+                  [String],
+                  Optional[IamRole]]
               }
             },
             Route => {
@@ -764,12 +1977,12 @@ type Aws = TypeSet[{
             RouteTableHandler => {
               functions => {
                 'create' => Callable[
-                  [RouteTable],
-                  Tuple[RouteTable, String]],
+                  [Optional[RouteTable]],
+                  Tuple[Optional[RouteTable], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  RouteTable]
+                  Optional[RouteTable]]
               }
             },
             SecurityGroup => {
@@ -805,12 +2018,12 @@ type Aws = TypeSet[{
             SecurityGroupHandler => {
               functions => {
                 'create' => Callable[
-                  [SecurityGroup],
-                  Tuple[SecurityGroup, String]],
+                  [Optional[SecurityGroup]],
+                  Tuple[Optional[SecurityGroup], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  SecurityGroup]
+                  Optional[SecurityGroup]]
               }
             },
             StateReason => {
@@ -858,12 +2071,12 @@ type Aws = TypeSet[{
             SubnetHandler => {
               functions => {
                 'create' => Callable[
-                  [Subnet],
-                  Tuple[Subnet, String]],
+                  [Optional[Subnet]],
+                  Tuple[Optional[Subnet], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  Subnet]
+                  Optional[Subnet]]
               }
             },
             UserIdGroupPair => {
@@ -901,12 +2114,12 @@ type Aws = TypeSet[{
             VPCHandler => {
               functions => {
                 'create' => Callable[
-                  [Vpc],
-                  Tuple[Vpc, String]],
+                  [Optional[Vpc]],
+                  Tuple[Optional[Vpc], String]],
                 'delete' => Callable[String],
                 'read' => Callable[
                   [String],
-                  Vpc]
+                  Optional[Vpc]]
               }
             },
             Vpc => {
