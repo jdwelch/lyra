@@ -18,11 +18,9 @@ import (
 
 // LyraPlugin is metadata about the project
 type LyraPlugin struct {
-	Name        string `survey:"name"`
-	Author      string
-	Version     string
-	Language    string `survey:"language"`
-	LanguageExt string
+	Name    string `survey:"name"`
+	Author  string
+	Version string
 }
 
 // NewCreateCmd returns the create subcommand
@@ -45,58 +43,56 @@ func NewCreateCmd() *cobra.Command {
 
 func runCreate(cmd *cobra.Command, args []string) {
 
+	log := logger.Get()
+
 	name := "my-project"
 	author := whoAmI()
 	version := "0.1.0"
-	language := "puppet"
-
-	if len(args) > 0 {
-		name = args[0]
-	}
-
-	log := logger.Get()
-	var qs = []*survey.Question{
-		{
-			Name: "name",
-			Prompt: &survey.Input{
-				Message: "What would you like to call this Lyra package?",
-				Default: name,
-			},
-			// FIXME: Also validate for proper format
-			Validate: func(val interface{}) error {
-				if m.Exists(val.(string)) {
-					return errors.New("directory " + val.(string) + " exists. Try another name, please.")
-				}
-				return nil
-			},
-			Transform: survey.ToLower,
-		},
-		{
-			Name: "language",
-			Prompt: &survey.Select{
-				Message: "Choose a language:",
-				Options: []string{"puppet", "yaml", "typescript"},
-				Default: language,
-			},
-		},
-	}
 
 	answers := LyraPlugin{
-		`survey: "name"`,
+		name,
 		author,
 		version,
-		`survey: "language"`,
-		".ext",
 	}
 
-	ui.DescribeStep("Lyra can help you get started with a helpful scaffold.")
-	fmt.Println("Just answer these questions:")
+	if len(args) > 0 {
+		val := args[0]
+		// FIXME: Also validate for proper format
+		if m.Exists(val) {
+			fmt.Println("directory '" + val + "' exists. Try another name, please.")
+			os.Exit(0)
+		} else {
+			answers.Name = args[0]
+		}
+	} else {
+		// Only do the survey if there's no argument specified
+		var qs = []*survey.Question{
+			{
+				Name: "name",
+				Prompt: &survey.Input{
+					Message: "What would you like to call this Lyra package?",
+					Default: name,
+				},
+				// FIXME: Also validate for proper format
+				Validate: func(val interface{}) error {
+					if m.Exists(val.(string)) {
+						return errors.New("directory " + val.(string) + " exists. Try another name, please.")
+					}
+					return nil
+				},
+				Transform: survey.ToLower,
+			},
+		}
 
-	err := survey.Ask(qs, &answers)
+		ui.DescribeStep("Lyra can help you get started with a helpful scaffold.")
+		fmt.Println("Just answer these questions:")
 
-	if err != nil {
-		log.Error("No answer", "error", err)
-		os.Exit(0)
+		err := survey.Ask(qs, &answers)
+
+		if err != nil {
+			log.Error("No answer", "error", err)
+			os.Exit(0)
+		}
 	}
 
 	createManifestScaffold(answers)
@@ -113,34 +109,13 @@ func createManifestScaffold(wf LyraPlugin) {
 	metadatafile := pkgdirectory + "/" + "metadata.yaml"
 	generateFileFromTemplate(wf, metadatafile, metadataTemplate)
 
-	// Generate workflow template
+	// Generate workflow templates
 	wfdir := pkgdirectory + "/workflows"
 	mkScaffoldDir(wfdir)
 
-	// FIXME: This manual mapping seems stupid.
-	if wf.Language == "puppet" {
-		wf.LanguageExt = "pp"
-	}
-
-	if wf.Language == "yaml" {
-		wf.LanguageExt = "yaml"
-	}
-
-	if wf.Language == "typescript" {
-		wf.LanguageExt = "ts"
-	}
-
-	wffile := wfdir + "/" + pkgname + "-default." + wf.LanguageExt
-
-	if wf.Language == "puppet" {
-		generateFileFromTemplate(wf, wffile, puppetWfTemplate)
-	}
-	if wf.Language == "yaml" {
-		generateFileFromTemplate(wf, wffile, yamlWfTemplate)
-	}
-	if wf.Language == "typescript" {
-		generateFileFromTemplate(wf, wffile, typescriptWfTemplate)
-	}
+	wffile := wfdir + "/" + pkgname
+	generateFileFromTemplate(wf, wffile+"-actions.ts", typescriptWfTemplate)
+	generateFileFromTemplate(wf, wffile+"-resources.yaml", yamlWfTemplate)
 
 	// Generate sample data
 	datafile := pkgdirectory + "/" + "values.yaml"
@@ -231,7 +206,8 @@ const (
 ├── deploy.yaml
 ├── values.yaml
 └── workflows
-    └──{{.Name}}-default.{{.LanguageExt}}
+    └──{{.Name}}-actions.ts
+    └──{{.Name}}-resources.yaml
 `
 
 	puppetWfTemplate = `# This is an auto-generated scaffold
