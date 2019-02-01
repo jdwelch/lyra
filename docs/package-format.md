@@ -10,7 +10,8 @@ my-project
 ├── deploy.yaml
 ├── values.yaml
 └── workflows
-    └──my-project-default.pp
+    └──my-project-actions.ts
+    └──my-project-resources.yaml
 ```
 
 ## Form and function of each file
@@ -63,4 +64,18 @@ aws_region: 'us-west-2'
 image_id: 'ami-b63ae0ce'
 ```
 
-**workflows/**: Workflow manifests
+**workflows/my-project-resources.ts**: Workflow manifest with sample action statement(s)
+
+_Example:_
+
+```typescript
+[FIXME:]
+```
+
+**workflows/my-project-resources.yaml**: Workflow manifest with sample resource statement(s)
+
+_Example:_
+
+```yaml
+[FIXME:]
+```
