@@ -12,7 +12,7 @@ All activities are declared using the following syntax:
 ##### input
 The input declaration is similar to a function parameter list. The following:
 
-    input => (String $i1, String $i2 = lookup('do_something::i1'))
+    input => (String $i1, String $i2 = lookup('doSomething::i1'))
 
 declares the named parameters _i1_ and _i2_. The parameter _i2_ will get its value from a lookup.
 
@@ -42,7 +42,7 @@ A special construct can be used when it is desirable to group attributes into a 
 
 this example will result in
 
-    output => (Struct[x1 => Like[<resource_type>, x1], x1 => Like[<resource_type>, x2]] $o)
+    output => (Struct[x1 => Like[<resourceType>, x1], x1 => Like[<resourceType>, x2]] $o)
 
 this special construct also allows aliases, thus:
 
@@ -50,12 +50,15 @@ this special construct also allows aliases, thus:
 
 yields:
 
-    output => (Struct[a=>Like[<resource_type>,x1],b=>Like[<resource_type>,x2]] $o)
+    output => (Struct[a=>Like[<resourceType>,x1],b=>Like[<resourceType>,x2]] $o)
 
-#### guard
-an activity is considered to be a guard when it declares:
+#### when
+an activity is considered to have a guard when it declares:
 
-     guard => true
+     when => <guard expression>
+     
+the `<guard expression>` is a string containing a boolean expression consisting of variable names that are
+combined using the keywords `and` and `or`. The expression can also use parentheses to enforce evaluation order.
 
 #### sequential
 The sequential aspect of evaluation is controlled using the following syntax.
@@ -73,35 +76,41 @@ Iteration is defined by adding one of the following constructs between the `<pro
 
       each(<hash>) |$key, $value|
 
+## State handler
+
+### Example
+
+Activity that performs different actions on create, read, delete, and update.
+
+    stateHandler doSomething {
+      handlerFor => Some::Resource
+      input => (String i1, String i2 = lookup('doSomething::i1')),
+      output => (String x, Integer y)
+    } {
+      create($state) {
+        // Code to create the subject
+      }
+      read($externalId) {
+        // Code to read the subject
+      }
+      update($externalId, $state) {
+        // Code to update the subject
+      }
+      delete($externalId)  {
+        // Code to delete the subject
+      }
+    }
+
 ## Action
 
 ### Example
 
-Action that performs different actions on read, delete, and upsert.
-
-    action do_something {
-      input => (String i1, String i2 = lookup('do_something::i1')),
+    action doSomething {
+      input => (String i1, String i2 = lookup('doSomething::i1')),
       output => (String x, Integer y)
     } {
-      read {
-        // Code to read subjects
-      }
-      delete {
-        // Code to delete subjects
-      }
-      upsert {
-        // Code to perform upsert on subjects
-      }
-    }
-
-Read-only action.
-
-    action do_something {
-      readonly => true
-      input => (String i1, String i2 = lookup('do_something::i1')),
-      output => (String x, Integer y)
-    } {
-      // Code to read subjects
+      // Code to do something based in input and produce output
+      return { x => $x, y => $y }
     }
 
 ## Resource
@@ -111,13 +120,13 @@ Read-only action.
 #### Simple resource
 
     resource vpc {
-      output => ($vpc_id)
+      output => ($vpcId)
     } {
-      region               => $region,
-      cidr_block           => '192.168.0.0/16',
-      tags                 => $tags,
-      enable_dns_hostnames => true,
-      enable_dns_support   => true
+      region             => $region,
+      cidrBlock          => '192.168.0.0/16',
+      tags               => $tags,
+      enableDnsHostnames => true,
+      enableDnsSupport   => true
     }
 
 In this example, the inferred input will be `input => ($region, $tags)`
@@ -127,15 +136,15 @@ In this example, the inferred input will be `input => ($region, $tags)`
     resource nodes {
       type => Lyra::Aws::Instance,
       input => (
-        Integer $ec2_cnt = lookup('aws.instance.count'),
+        Integer $ec2Cnt = lookup('aws.instance.count'),
         String $img = lookup('aws.instance.image'),
         $region, $tags)
-      output => ($key = instance_id, $value = [public_ip, private_ip])
-    } times($ec2_cnt) |$n| {
+      output => ($key = instanceId, $value = [publicIp, privateIp])
+    } times($ec2Cnt) |$n| {
       region => $region,
-      image_id => $img,
-      instance_type => 't2.nano',
-      key_name => $key_name,
+      imageId => $img,
+      instanceType => 't2.nano',
+      keyName => $keyName,
       tags => $tags
     }
 
@@ -143,10 +152,10 @@ This example will manage a number of ec2 instances. The actual count is fetched 
 The final computed output of this resource is a hash declared as:
 
     output => (Hash[
-      Like[Lyra::Aws::Instance, instance_id],
+      Like[Lyra::Aws::Instance, instanceId],
       Struct[
-        public_ip=>Like[Lyra::Aws::Instance, public_ip],
-        private_ip=>Like[Lyra::Aws::Instance, private_ip]
+        publicIp=>Like[Lyra::Aws::Instance, publicIp],
+        privateIp=>Like[Lyra::Aws::Instance, privateIp]
       ]] $nodes)
 
 ## Workflow
@@ -155,43 +164,43 @@ The final computed output of this resource is a hash declared as:
 
 Workflow that leverages the `typespace` to infer the resource types i.e. 'lyra::aws::vpc'
 
-    workflow my_workflow {
+    workflow myWorkflow {
       typespace => 'lyra::aws',
       input => (String $region = lookup('aws::region', Hash[String,String] $tags = lookup('aws::tags')),
-      output => ($vpc_id, $subnet_id)
+      output => ($vpcId, $subnetId)
     } {
       resource vpc {
-        output => ($vpc_id)
+        output => ($vpcId)
       } {
-        region               => $region,
-        cidr_block           => '192.168.0.0/16',
-        tags                 => $tags,
-        enable_dns_hostnames => true,
-        enable_dns_support   => true
+        region              => $region,
+        cidrBlock           => '192.168.0.0/16',
+        tags                => $tags,
+        enableDnsHostnames  => true,
+        enableDnsSupport    => true
       }
 
       resource subnet {
-        output => ($subnet_id)
+        output => ($subnetId)
       } {
-        region               => $region,
-        vpc_id               => $vpc_id,
-        cidr_block           => '192.168.1.0/24',
-        tags                 => $tags,
-        map_public_ip_on_launch => true
+        region              => $region,
+        vpcId               => $vpcId,
+        cidrBlock           => '192.168.1.0/24',
+        tags                => $tags,
+        mapPublicIpOnLaunch => true
       }
     }
 
 
 Workflow containing a guard in the form of an action
 
-    workflow hello_wf {
-      input => (String $hello_url = lookup('hello_url') String $cert = lookup('cert')),
+    workflow helloWf {
+      input => (String $helloUrl = lookup('helloUrl') String $cert = lookup('cert')),
     } {
-      action need_hello {
-        guard => true
+      action pingHello {
+        output => ($needHello)
       } {
         $response = curl(
-          url => $hello_url,
+          url => $helloUrl,
           query => { x => 10 },
           headers => { 'Accept' => 'application/json' },
           cert => $cert)
@@ -200,14 +209,14 @@ Workflow containing a guard in the form of an action
         $hash['hello'] < 10
       }
 
-      resource when_hello {
-        when => need_hello
+      resource whenHello {
+        when => needHello
       } {
         ...
       }
 
-      resource when_not_hello {
-        when => !need_hello
+      resource whenNotHello {
+        when => !needHello
       } {
         ...
       }
@@ -215,24 +224,23 @@ Workflow containing a guard in the form of an action
 
 Workflow containing a guard in the form of a read-only resource
 
-    workflow hello_wf {
+    workflow helloWf {
       ...
     } {
-      resource need_hello {
-        guard => true,
-        external_id => '<some external identifier>',
+      resource needHello {
+        externalId => '<some external identifier>',
         type => My::Hello::Resource,       # A resource with a boolean attribute "enabled"
-        output => ($need_hello = enabled)
+        output => ($needHello = enabled)
       }  # No "state" block needed here. The resource is read-only.
 
-      resource when_hello {
-        when => need_hello
+      resource whenHello {
+        when => needHello
       } {
         ...
       }
 
-      resource when_not_hello {
-        when => !need_hello
+      resource whenNotHello {
+        when => !needHello
       } {
         ...
       }

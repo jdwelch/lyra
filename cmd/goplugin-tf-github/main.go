@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/lyraproj/lyra/cmd/goplugin-tf-aws/handler"
+	"github.com/lyraproj/lyra/cmd/goplugin-tf-github/handler"
 )
 
 func main() {
