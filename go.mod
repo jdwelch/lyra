@@ -5,6 +5,7 @@ require (
 	github.com/Azure/azure-sdk-for-go v24.1.0+incompatible // indirect
 	github.com/aws/aws-sdk-go v1.16.26
 	github.com/boltdb/bolt v1.3.1
+	github.com/briandowns/spinner v0.0.0-20190212173954-5cf08d0ac778
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dnaeon/go-vcr v1.0.1 // indirect
 	github.com/go-logr/logr v0.1.0
@@ -33,6 +34,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/satori/uuid v1.2.0 // indirect
 	github.com/spf13/cobra v0.0.3
+	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
 	github.com/terraform-providers/terraform-provider-aws v1.57.0
 	github.com/terraform-providers/terraform-provider-azurerm v1.21.0
@@ -46,6 +48,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190212230446-3e8b2be13635 // indirect
 	golang.org/x/sys v0.0.0-20190213121743-983097b1a8a3 // indirect
 	gonum.org/v1/netlib v0.0.0-20190119082159-9be13e02fd56 // indirect
+	gopkg.in/AlecAivazis/survey.v1 v1.8.2
 	gopkg.in/src-d/enry.v1 v1.6.7
 	gopkg.in/toqueteos/substring.v1 v1.0.2 // indirect
 	k8s.io/client-go v10.0.0+incompatible
