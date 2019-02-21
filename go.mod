@@ -1,81 +1,55 @@
 module github.com/lyraproj/lyra
 
 require (
-	cloud.google.com/go v0.35.1 // indirect
-	github.com/Netflix/go-expect v0.0.0-20180928190340-9d1f4485533b // indirect
-	github.com/apparentlymart/go-cidr v1.0.0 // indirect
-	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
-	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.16.25
-	github.com/beevik/etree v1.0.1 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
+	cloud.google.com/go v0.36.0 // indirect
+	github.com/Azure/azure-sdk-for-go v24.1.0+incompatible // indirect
+	github.com/aws/aws-sdk-go v1.16.26
 	github.com/boltdb/bolt v1.3.1
-	github.com/boombuler/barcode v1.0.0 // indirect
-	github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7
-	github.com/cespare/trie v0.0.0-20150610204604-3fe1a95cbba9 // indirect
 	github.com/davecgh/go-spew v1.1.1
+	github.com/dnaeon/go-vcr v1.0.1 // indirect
 	github.com/go-logr/logr v0.1.0
-	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
-	github.com/hashicorp/go-getter v1.0.1 // indirect
-	github.com/hashicorp/go-hclog v0.0.0-20190109152822-4783caec6f2e
-	github.com/hashicorp/go-plugin v0.0.0-20181212150838-f444068e8f5a
-	github.com/hashicorp/go-uuid v1.0.1 // indirect
-	github.com/hashicorp/go-version v1.1.0 // indirect
-	github.com/hashicorp/hcl2 v0.0.0-20190124230628-a9ca194bcdc3 // indirect
-	github.com/hashicorp/hil v0.0.0-20170627220502-fa9f258a9250 // indirect
-	github.com/hashicorp/logutils v1.0.0 // indirect
+	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
+	github.com/hashicorp/go-azure-helpers v0.0.0-20190129193224-166dfd221bb2 // indirect
+	github.com/hashicorp/go-hclog v0.7.0
+	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 	github.com/hashicorp/terraform v0.11.11
-	github.com/hashicorp/vault v1.0.2 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
-	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
-	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jen20/awspolicyequivalence v1.0.0 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a // indirect
 	github.com/leonelquinteros/gotext v1.4.0
 	github.com/lyraproj/hiera v0.0.0-20190123103955-fe409985fbd6
-	github.com/lyraproj/issue v0.0.0-20190122215520-5efbea1d1edb
-	github.com/lyraproj/lyra-operator v0.0.0-20190122104909-182988132452
-	github.com/lyraproj/puppet-evaluator v0.0.0-20190124220224-0b2cf0dd23a8
-	github.com/lyraproj/puppet-workflow v0.0.0-20190124163310-8d895f8b4c17
+	github.com/lyraproj/issue v0.0.0-20190213110846-64f0e861a560
+	github.com/lyraproj/lyra-operator v0.0.0-20190214121239-e1b92c0c0601
+	github.com/lyraproj/puppet-evaluator v0.0.0-20190220162250-4332f4100731
+	github.com/lyraproj/puppet-workflow v0.0.0-20190220162536-b0ce7c68c3c9
 	github.com/lyraproj/semver v0.0.0-20181213164306-02ecea2cd6a2
-	github.com/lyraproj/servicesdk v0.0.0-20190125100148-aac636fa09b5
-	github.com/lyraproj/wfe v0.0.0-20190124141441-40f9efc1bf31
+	github.com/lyraproj/servicesdk v0.0.0-20190220162341-69a3573dc4f8
+	github.com/lyraproj/wfe v0.0.0-20190220162440-1888b39c9eca
+	github.com/marstr/guid v1.1.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
-	github.com/mitchellh/cli v1.0.0 // indirect
-	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
-	github.com/mitchellh/hashstructure v1.0.0 // indirect
-	github.com/operator-framework/operator-sdk v0.4.0 // indirect
-	github.com/pborman/uuid v1.2.0 // indirect
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
-	github.com/posener/complete v1.2.1 // indirect
-	github.com/pquerna/otp v1.1.0 // indirect
-	github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f // indirect
-	github.com/prometheus/common v0.1.0 // indirect
-	github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1 // indirect
+	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90 // indirect
+	github.com/prometheus/common v0.2.0 // indirect
+	github.com/prometheus/procfs v0.0.0-20190209105433-f8d8b3f739bd // indirect
+	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/satori/uuid v1.2.0 // indirect
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
-	github.com/terraform-providers/terraform-provider-aws v1.56.0
-	github.com/terraform-providers/terraform-provider-template v1.0.0 // indirect
-	github.com/terraform-providers/terraform-provider-tls v1.2.0 // indirect
-	github.com/toqueteos/trie v0.0.0-20150530104557-56fed4a05683 // indirect
-	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b // indirect
-	golang.org/x/exp v0.0.0-20190124213512-9bb73264daa4 // indirect
-	golang.org/x/net v0.0.0-20190125091013-d26f9f9a57f3 // indirect
-	golang.org/x/oauth2 v0.0.0-20190115181402-5dab4167f31c // indirect
-	golang.org/x/sys v0.0.0-20190124100055-b90733256f2e // indirect
+	github.com/terraform-providers/terraform-provider-aws v1.57.0
+	github.com/terraform-providers/terraform-provider-azurerm v1.21.0
+	github.com/terraform-providers/terraform-provider-github v1.3.0
+	github.com/terraform-providers/terraform-provider-google v1.20.0
+	github.com/terraform-providers/terraform-provider-kubernetes v1.5.0
+	github.com/toqueteos/trie v1.0.0 // indirect
+	go.opencensus.io v0.19.0 // indirect
+	golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67 // indirect
+	golang.org/x/exp v0.0.0-20190212162250-21964bba6549 // indirect
+	golang.org/x/oauth2 v0.0.0-20190212230446-3e8b2be13635 // indirect
+	golang.org/x/sys v0.0.0-20190213121743-983097b1a8a3 // indirect
 	gonum.org/v1/netlib v0.0.0-20190119082159-9be13e02fd56 // indirect
-	google.golang.org/genproto v0.0.0-20190123001331-8819c946db44 // indirect
-	gopkg.in/AlecAivazis/survey.v1 v1.8.1
 	gopkg.in/src-d/enry.v1 v1.6.7
 	gopkg.in/toqueteos/substring.v1 v1.0.2 // indirect
-	k8s.io/apiextensions-apiserver v0.0.0-20190119024419-80a4532647cb // indirect
-	k8s.io/apimachinery v0.0.0-20190119020841-d41becfba9ee // indirect
 	k8s.io/client-go v10.0.0+incompatible
-	k8s.io/kube-openapi v0.0.0-20190115222348-ced9eb3070a5 // indirect
 	sigs.k8s.io/controller-runtime v0.1.10
 )
+
+replace github.com/google/go-github => github.com/google/go-github v16.0.0+incompatible // Terraform GitHub provider requires this version
