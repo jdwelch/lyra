@@ -31,6 +31,7 @@ var embeddedPluginNames = []string{
 }
 
 var dir = "./plugins"
+var typesDir = "./plugins/types"
 
 // Loader implements the Loader API from go-servicesdk
 type Loader struct {
@@ -108,7 +109,7 @@ func (l *Loader) loadService(c eval.Context, serviceID eval.TypedName) serviceap
 	return service
 }
 
-// PreLoad loads all plugins within reach.
+// PreLoad loads all plugins and manifests within reach.
 func (l *Loader) PreLoad(c eval.Context) {
 	// Use this loader when loading all typesets and definitions
 	c.DoWithLoader(l, func() {
@@ -117,6 +118,9 @@ func (l *Loader) PreLoad(c eval.Context) {
 
 		// Go plugins
 		l.loadPlugins(c, dir)
+
+		// load typesets from files (NOTE: this is typesets only by convention only at this point, it would attempt to load workflows if found)
+		l.loadPuppetDSL(c, typesDir)
 
 		// Puppet DSL files
 		l.loadPuppetDSL(c, dir)
@@ -128,6 +132,19 @@ func (l *Loader) PreLoad(c eval.Context) {
 		// e.g. REST, serverless, Typescript ...
 	})
 }
+
+// PreLoadPlugins loads all plugins within reach.
+func (l *Loader) PreLoadPlugins(c eval.Context) {
+	// Use this loader when loading all typesets and definitions
+	c.DoWithLoader(l, func() {
+		// Embedded plugins
+		l.loadEmbeddedPlugins(c)
+
+		// Go plugins
+		l.loadPlugins(c, dir)
+	})
+}
+
 
 func (l *Loader) loadEmbeddedPlugins(c eval.Context) {
 	l.logger.Debug("reading embedded plugins")

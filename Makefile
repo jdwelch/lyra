@@ -29,7 +29,7 @@ LICENSE_TMPFILE = LICENSE_TMPFILE.txt
 LINTIGNOREINITIALISMS = "cmd\/goplugin-(aws|example)\/.*\.go:.+: (func parameter|var|type|struct field|const|func) ([^ ]+) should be ([^ ]+)"
 
 PHONY+= all
-all: check-mods clean test lyra
+all: check-mods clean test lyra smoke-test
 
 PHONY+= protobuf
 protobuf: tmp/bin/protoc $(GOPATH)/bin/protoc-gen-go
@@ -64,7 +64,7 @@ goplugin-example:
 	$(call build,goplugin-example,cmd/goplugin-example/main.go)
 
 PHONY+= lyra
-lyra:
+lyra: check-mods
 	$(call build,lyra,cmd/lyra/main.go)
 
 $(GOPATH)/bin/licenses:
@@ -145,13 +145,18 @@ check-mods:
 	@echo "🔘 Ensuring go version is 1.11.4 or later (`date '+%H:%M:%S'`)"
 	@if [ "$(HAS_REQUIRED_GO)" == "" ]; \
 	then \
-		echo "🔴 must be running Go version 1.11.4 or later"; \
+		echo "🔴 must be running Go version 1.11.4 or later.  Please upgrade and run go clean -modcache"; \
 		exit 1; \
 	fi	
 	@echo "✅ Go version is sufficient  (`date '+%H:%M:%S'`)"
 	@echo "🔘 Ensuring go mod is available and turned on  (`date '+%H:%M:%S'`)"
 	@GO111MODULE=on go mod download || (echo "🔴 The command 'GO111MODULE=on go mod download' did not return zero exit code (exit code was $$?)"; exit 1)
 	@echo "✅ Go mod is available  (`date '+%H:%M:%S'`)"
+
+PHONY+= smoke-test
+smoke-test:
+	@echo "🔘 Running a smoke test with sample workflow"
+	@build/lyra apply sample || (echo "Failed $$?"; exit 1)
 
 define build
 	@echo "🔘 building - $(1) (`date '+%H:%M:%S'`)"
